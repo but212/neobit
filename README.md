@@ -125,7 +125,7 @@ neobit! {
     pub struct Flags: u32 {
         const A = 1 << 0;
         const B = 1 << 1;
-        const AB = Self::A.union(Self::B);  // const fn
+        const AB = Self::A.union(Self::B).bits();  // const fn
     }
 }
 
