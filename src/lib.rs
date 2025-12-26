@@ -1,0 +1,384 @@
+//! # neobit
+//!
+//! Zero-dependency, lightweight bitflags with readable debug output.
+//!
+//! ## Quick Start
+//!
+//! ```rust
+//! use neobit::neobit;
+//!
+//! neobit! {
+//!     /// File permissions
+//!     pub struct Permissions: u8 {
+//!         const READ    = 0b001;
+//!         const WRITE   = 0b010;
+//!         const EXECUTE = 0b100;
+//!         const ALL     = Self::READ.union(Self::WRITE).union(Self::EXECUTE).bits();
+//!     }
+//! }
+//!
+//! let perms = Permissions::READ | Permissions::WRITE;
+//! assert!(perms.contains(Permissions::READ));
+//! println!("{:?}", perms);  // Permissions(READ | WRITE)
+//! ```
+//!
+//! ## Design Philosophy
+//!
+//! **Unchecked by Design**: neobit intentionally does not validate bits.
+//! This preserves all bit information, which is essential for:
+//! - C FFI bindings
+//! - Protocol parsing
+//! - Hardware register access
+//!
+//! If you need validated flags, consider using the `bitflags` crate.
+//!
+//! ## Signed Types Warning
+//!
+//! Signed integer types are supported for ABI compatibility, but be careful
+//! with the `!` (complement) operator - it follows Rust's two's complement
+//! semantics which may produce unexpected results.
+
+#![no_std]
+
+/// Defines a bitflags struct with the specified flags.
+///
+/// # Example
+///
+/// ```rust
+/// use neobit::neobit;
+///
+/// neobit! {
+///     pub struct Flags: u8 {
+///         const A = 0b0001;
+///         const B = 0b0010;
+///         const C = 0b0100;
+///         const AB = Self::A.union(Self::B).bits();
+///     }
+/// }
+///
+/// let flags = Flags::A | Flags::B;
+/// assert_eq!(flags, Flags::AB);
+/// ```
+#[macro_export]
+macro_rules! neobit {
+    (
+        $(#[$meta:meta])*
+        $vis:vis struct $name:ident: $int_ty:ty {
+            $(
+                $(#[$const_meta:meta])*
+                const $flag_name:ident = $flag_value:expr;
+            )*
+        }
+    ) => {
+        $(#[$meta])*
+        #[derive(Copy, Clone, Eq, PartialEq, Hash)]
+        $vis struct $name {
+            bits: $int_ty,
+        }
+
+        impl $name {
+            $(
+                $(#[$const_meta])*
+                pub const $flag_name: Self = Self { bits: $flag_value };
+            )*
+
+            /// Internal: flag names and values for Debug output
+            const __FLAGS: &'static [(&'static str, $int_ty)] = &[
+                $((stringify!($flag_name), $flag_value),)*
+            ];
+
+            /// Creates an empty flags value (all bits unset).
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; } }
+            /// let flags = Flags::empty();
+            /// assert!(flags.is_empty());
+            /// ```
+            #[inline(always)]
+            pub const fn empty() -> Self {
+                Self { bits: 0 }
+            }
+
+            /// Creates a flags value from raw bits, retaining all bits.
+            ///
+            /// This does not validate the bits - unknown bits are preserved.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; } }
+            /// let flags = Flags::from_bits_retain(0xFF);
+            /// assert_eq!(flags.bits(), 0xFF);
+            /// ```
+            #[inline(always)]
+            pub const fn from_bits_retain(bits: $int_ty) -> Self {
+                Self { bits }
+            }
+
+            /// Returns the raw bit value.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let flags = Flags::A | Flags::B;
+            /// assert_eq!(flags.bits(), 0b11);
+            /// ```
+            #[inline(always)]
+            pub const fn bits(self) -> $int_ty {
+                self.bits
+            }
+
+            /// Returns the union of two flags (OR).
+            ///
+            /// This is the `const fn` equivalent of the `|` operator.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// const AB: Flags = Flags::A.union(Flags::B);
+            /// assert_eq!(AB.bits(), 0b11);
+            /// ```
+            #[inline(always)]
+            pub const fn union(self, other: Self) -> Self {
+                Self { bits: self.bits | other.bits }
+            }
+
+            /// Returns the intersection of two flags (AND).
+            ///
+            /// This is the `const fn` equivalent of the `&` operator.
+            #[inline(always)]
+            pub const fn intersection(self, other: Self) -> Self {
+                Self { bits: self.bits & other.bits }
+            }
+
+            /// Returns the difference of two flags (self AND NOT other).
+            ///
+            /// This is the `const fn` equivalent of the `-` operator.
+            #[inline(always)]
+            pub const fn difference(self, other: Self) -> Self {
+                Self { bits: self.bits & !other.bits }
+            }
+
+            /// Returns the symmetric difference of two flags (XOR).
+            ///
+            /// This is the `const fn` equivalent of the `^` operator.
+            #[inline(always)]
+            pub const fn symmetric_difference(self, other: Self) -> Self {
+                Self { bits: self.bits ^ other.bits }
+            }
+
+            /// Returns the bitwise complement (NOT).
+            ///
+            /// This is the `const fn` equivalent of the `!` operator.
+            ///
+            /// # Warning
+            ///
+            /// For signed integer types, this follows Rust's two's complement
+            /// semantics which may produce unexpected results.
+            #[inline(always)]
+            pub const fn complement(self) -> Self {
+                Self { bits: !self.bits }
+            }
+
+            /// Returns `true` if no flags are set.
+            #[inline(always)]
+            pub const fn is_empty(self) -> bool {
+                self.bits == 0
+            }
+
+            /// Returns `true` if all flags in `other` are contained in `self`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let ab = Flags::A | Flags::B;
+            /// assert!(ab.contains(Flags::A));
+            /// assert!(ab.contains(Flags::A | Flags::B));
+            /// assert!(!Flags::A.contains(Flags::B));
+            /// ```
+            #[inline(always)]
+            pub const fn contains(self, other: Self) -> bool {
+                (self.bits & other.bits) == other.bits
+            }
+
+            /// Returns `true` if any flags in `other` are contained in `self`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; const C = 4; } }
+            /// let ab = Flags::A | Flags::B;
+            /// assert!(ab.intersects(Flags::A));
+            /// assert!(ab.intersects(Flags::B | Flags::C));
+            /// assert!(!ab.intersects(Flags::C));
+            /// ```
+            #[inline(always)]
+            pub const fn intersects(self, other: Self) -> bool {
+                (self.bits & other.bits) != 0
+            }
+
+            /// Inserts the flags in `other` into `self`.
+            #[inline(always)]
+            pub fn insert(&mut self, other: Self) {
+                self.bits |= other.bits;
+            }
+
+            /// Removes the flags in `other` from `self`.
+            #[inline(always)]
+            pub fn remove(&mut self, other: Self) {
+                self.bits &= !other.bits;
+            }
+
+            /// Toggles the flags in `other` in `self`.
+            #[inline(always)]
+            pub fn toggle(&mut self, other: Self) {
+                self.bits ^= other.bits;
+            }
+        }
+
+        impl Default for $name {
+            #[inline(always)]
+            fn default() -> Self {
+                Self::empty()
+            }
+        }
+
+        impl From<$int_ty> for $name {
+            #[inline(always)]
+            fn from(bits: $int_ty) -> Self {
+                Self::from_bits_retain(bits)
+            }
+        }
+
+        impl From<$name> for $int_ty {
+            #[inline(always)]
+            fn from(flags: $name) -> $int_ty {
+                flags.bits()
+            }
+        }
+
+        impl core::ops::BitOr for $name {
+            type Output = Self;
+            #[inline(always)]
+            fn bitor(self, rhs: Self) -> Self {
+                self.union(rhs)
+            }
+        }
+
+        impl core::ops::BitOrAssign for $name {
+            #[inline(always)]
+            fn bitor_assign(&mut self, rhs: Self) {
+                *self = self.union(rhs);
+            }
+        }
+
+        impl core::ops::BitAnd for $name {
+            type Output = Self;
+            #[inline(always)]
+            fn bitand(self, rhs: Self) -> Self {
+                self.intersection(rhs)
+            }
+        }
+
+        impl core::ops::BitAndAssign for $name {
+            #[inline(always)]
+            fn bitand_assign(&mut self, rhs: Self) {
+                *self = self.intersection(rhs);
+            }
+        }
+
+        impl core::ops::BitXor for $name {
+            type Output = Self;
+            #[inline(always)]
+            fn bitxor(self, rhs: Self) -> Self {
+                self.symmetric_difference(rhs)
+            }
+        }
+
+        impl core::ops::BitXorAssign for $name {
+            #[inline(always)]
+            fn bitxor_assign(&mut self, rhs: Self) {
+                *self = self.symmetric_difference(rhs);
+            }
+        }
+
+        impl core::ops::Not for $name {
+            type Output = Self;
+            #[inline(always)]
+            fn not(self) -> Self {
+                self.complement()
+            }
+        }
+
+        impl core::ops::Sub for $name {
+            type Output = Self;
+            #[inline(always)]
+            fn sub(self, rhs: Self) -> Self {
+                self.difference(rhs)
+            }
+        }
+
+        impl core::ops::SubAssign for $name {
+            #[inline(always)]
+            fn sub_assign(&mut self, rhs: Self) {
+                *self = self.difference(rhs);
+            }
+        }
+
+        impl core::fmt::Debug for $name {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                write!(f, "{}(", stringify!($name))?;
+
+                let mut bits = self.bits;
+                let mut first = true;
+
+                // Output single-bit flags by name
+                for &(name, value) in Self::__FLAGS {
+                    // Check if single bit (power of 2)
+                    let is_single_bit = value != 0 && (value & (value.wrapping_sub(1))) == 0;
+                    if is_single_bit && (bits & value) == value {
+                        if !first {
+                            write!(f, " | ")?;
+                        }
+                        write!(f, "{}", name)?;
+                        bits &= !value;
+                        first = false;
+                    }
+                }
+
+                // Output remaining unknown bits as hex
+                if bits != 0 {
+                    if !first {
+                        write!(f, " | ")?;
+                    }
+                    write!(f, "{:#x}", bits)?;
+                    first = false;
+                }
+
+                // Empty case
+                if first {
+                    write!(f, "empty")?;
+                }
+
+                write!(f, ")")
+            }
+        }
+
+        impl core::fmt::Binary for $name {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                core::fmt::Binary::fmt(&self.bits, f)
+            }
+        }
+    };
+}

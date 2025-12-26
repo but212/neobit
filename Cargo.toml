@@ -1,0 +1,23 @@
+[package]
+name = "neobit"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.56"
+license = "MIT OR Apache-2.0"
+description = "Zero-dependency, lightweight bitflags with readable debug output"
+keywords = ["bitflags", "flags", "bits", "no-std", "lightweight"]
+categories = ["no-std", "data-structures"]
+repository = "https://github.com/but212/neobit"
+documentation = "https://docs.rs/neobit"
+readme = "README.md"
+
+[features]
+default = []
+std = []
+
+[dev-dependencies]
+# criterion = "0.5"  # 벤치마크용, Phase 2에서 활성화
+
+# [[bench]]
+# name = "comparison"
+# harness = false
