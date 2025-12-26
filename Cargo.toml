@@ -16,8 +16,3 @@ default = []
 std = []
 
 [dev-dependencies]
-# criterion = "0.5"  # 벤치마크용, Phase 2에서 활성화
-
-# [[bench]]
-# name = "comparison"
-# harness = false
