@@ -10,6 +10,7 @@ Zero-dependency, lightweight bitflags with readable debug output.
 - **`no_std` compatible** - Works in embedded environments
 - **All integer types** - Supports `u8`-`u128` and `i8`-`i128`
 - **Built-in `all()` method** - Get all flags without manual constants
+- **Flexible bit validation** - Both `from_bits()` (validated) and `from_bits_retain()` (unchecked)
 
 ## Quick Start
 
@@ -35,6 +36,12 @@ fn main() {
     // Get all flags
     let all = Permissions::all();
     assert!(all.contains(Permissions::READ | Permissions::WRITE | Permissions::EXECUTE));
+    
+    // Validate bits safely
+    let valid = Permissions::from_bits(0b011);
+    assert!(valid.is_some());
+    let invalid = Permissions::from_bits(0b1000);
+    assert!(invalid.is_none());
 }
 ```
 
@@ -66,40 +73,41 @@ Benefits:
 
 ## Who Should Use This
 
-### ✅ Good Fit
+### Good Fit
 
 - C FFI bindings (hardware registers, system calls)
 - Protocol parsing (network packets, binary formats)
 - Embedded systems (`no_std` environments)
 - Libraries that want minimal dependencies
 
-### ⚠️ Consider `bitflags` Instead
+### Consider `bitflags` Instead
 
-- You need validated flags (`from_bits() -> Option<T>`)
 - You need iterator support
 - You're building a beginner-friendly application
+- You prefer always-valid flags by default
 
 ## Design Philosophy
 
-### Unchecked by Design
+### Flexible Bit Validation
 
-neobit **intentionally does not validate bits**. Unknown bits are preserved, not rejected.
+neobit provides both validated and unchecked bit operations:
 
 ```rust
-// bitflags: unknown bits → None
-let flags = Flags::from_bits(0xFF);  // None
+// Safe validation - returns None for unknown bits
+let flags = Permissions::from_bits(0b011);  // Some(Permissions)
+let invalid = Permissions::from_bits(0xFF);  // None
 
-// neobit: unknown bits → preserved
-let flags = Flags::from_bits_retain(0xFF);  // All bits kept
+// Unchecked retention - preserves all bits
+let flags = Permissions::from_bits_retain(0xFF);  // All bits kept
 ```
 
 This is a deliberate trade-off:
 
 | Aspect | neobit | bitflags |
 |--------|--------|----------|
-| C FFI / Registers | ✅ No data loss | ⚠️ May lose unknown bits |
-| Protocol parsing | ✅ Future-compatible | ⚠️ Version mismatch issues |
-| Beginner safety | ⚠️ No validation | ✅ Option protection |
+| C FFI / Registers | No data loss | May lose unknown bits |
+| Protocol parsing | Future-compatible | Version mismatch issues |
+| Beginner safety | No validation | Option protection |
 
 ## API Overview
 
@@ -121,7 +129,8 @@ All operators have `*Assign` variants (`|=`, `&=`, etc.).
 // Construction
 Flags::empty()
 Flags::all()                    // All defined flags
-Flags::from_bits_retain(bits)
+Flags::from_bits(bits)          // Validated, returns Option<Self>
+Flags::from_bits_retain(bits)   // Unchecked, preserves all bits
 
 // Access
 flags.bits()
@@ -167,6 +176,7 @@ let bits: u8 = flags.into();
 
 // Explicit
 let flags = Flags::from_bits_retain(0b11);
+let validated = Flags::from_bits(0b11);
 let bits = flags.bits();
 ```
 

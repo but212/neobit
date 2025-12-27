@@ -31,6 +31,12 @@ fn test_from_bits_retain() {
 }
 
 #[test]
+fn test_from_bits() {
+    let flags = Permissions::from_bits(0b111);
+    assert_eq!(flags.expect("Invalid bits").bits(), 0b111);
+}
+
+#[test]
 fn test_operators() {
     // OR
     let rw = Permissions::READ | Permissions::WRITE;

@@ -23,17 +23,24 @@
 //! // Get all flags
 //! let all = Permissions::all();
 //! assert!(all.contains(Permissions::READ | Permissions::WRITE | Permissions::EXECUTE));
+//!
+//! // Validate bits
+//! let valid = Permissions::from_bits(0b011);
+//! assert!(valid.is_some());
+//! let invalid = Permissions::from_bits(0b1000);
+//! assert!(invalid.is_none());
 //! ```
 //!
 //! ## Design Philosophy
 //!
-//! **Unchecked by Design**: neobit intentionally does not validate bits.
-//! This preserves all bit information, which is essential for:
+//! **Flexible Bit Validation**: neobit provides both validated and unchecked bit operations.
+//! - `from_bits()` validates bits and returns `Option<Self>`
+//! - `from_bits_retain()` preserves all bits without validation
+//!
+//! This preserves all bit information when needed, which is essential for:
 //! - C FFI bindings
 //! - Protocol parsing
 //! - Hardware register access
-//!
-//! If you need validated flags, consider using the `bitflags` crate.
 //!
 //! ## Signed Types Warning
 //!
@@ -103,6 +110,29 @@ macro_rules! neobit {
             #[inline(always)]
             pub const fn empty() -> Self {
                 Self { bits: 0 }
+            }
+
+            /// Creates a flags value from raw bits if all bits are valid.
+            ///
+            /// Returns `None` if any bits are set that don't correspond to a defined flag.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// assert!(Flags::from_bits(0b11).is_some());
+            /// assert!(Flags::from_bits(0b100).is_none());
+            /// ```
+            #[inline(always)]
+            pub const fn from_bits(bits: $int_ty) -> Option<Self> {
+                let all = Self::all().bits;
+
+                if (bits & !all) == 0 {
+                    Some(Self { bits })
+                } else {
+                    None
+                }
             }
 
             /// Creates a flags value from raw bits, retaining all bits.
