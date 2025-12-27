@@ -107,7 +107,7 @@ fn test_signed_debug() {
 #[test]
 fn test_signed_debug_with_unknown() {
     // Note: for signed types, unknown bits display as hex
-    let flags: SignedFlags = 0x71.into();  // A + unknown bits
+    let flags: SignedFlags = 0x71.into(); // A + unknown bits
     let debug = format!("{:?}", flags);
     assert_eq!(debug, "SignedFlags(A | 0x70)");
 }

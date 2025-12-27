@@ -346,7 +346,7 @@ macro_rules! neobit {
                 // Output single-bit flags by name
                 for &(name, value) in Self::__FLAGS {
                     // Check if single bit (power of 2)
-                    let is_single_bit = value != 0 && (value & (value.wrapping_sub(1))) == 0;
+                    let is_single_bit: bool = value != 0 && (value & (value.wrapping_sub(1))) == 0;
                     if is_single_bit && (bits & value) == value {
                         if !first {
                             write!(f, " | ")?;

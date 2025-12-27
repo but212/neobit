@@ -1,69 +1,80 @@
-//! C FFI example demonstrating signed integer bitflags.
+//! C FFI example demonstrating signed integer bitflags with libc.
 //!
-//! This example shows how neobit can be used with signed integer types
-//! for compatibility with C libraries that use `int` for flags.
+//! This example shows how neobit can be used with libc types
+//! for compatibility with C libraries.
 
 use neobit::neobit;
 
 neobit! {
-    /// Flags compatible with a hypothetical C library.
-    ///
-    /// Many C libraries define flags as `int` constants:
-    /// ```c
-    /// #define OPTION_NONE    0x00
-    /// #define OPTION_VERBOSE 0x01
-    /// #define OPTION_DEBUG   0x02
-    /// #define OPTION_FORCE   0x04
-    /// ```
-    pub struct COptions: i32 {
-        const NONE    = 0x00;
-        const VERBOSE = 0x01;
-        const DEBUG   = 0x02;
-        const FORCE   = 0x04;
-        const ALL     = Self::VERBOSE.union(Self::DEBUG).union(Self::FORCE).bits();
+    /// File open flags compatible with libc.
+    pub struct OpenFlags: libc::c_int {
+        const RDONLY   = libc::O_RDONLY;
+        const WRONLY   = libc::O_WRONLY;
+        const RDWR     = libc::O_RDWR;
+        const CREAT    = libc::O_CREAT;
+        const TRUNC    = libc::O_TRUNC;
+        const APPEND   = libc::O_APPEND;
     }
 }
 
-// Simulated C function
-fn c_library_init(flags: i32) {
-    println!("C library initialized with flags: {:#x}", flags);
-}
-
-fn c_library_process(flags: i32) -> i32 {
-    // Simulate some processing
-    flags | 0x100 // Add some "result" flag
+#[cfg(unix)]
+neobit! {
+    /// File permission flags compatible with libc (Unix only).
+    pub struct FileMode: libc::mode_t {
+        const RUSR = libc::S_IRUSR;
+        const WUSR = libc::S_IWUSR;
+        const XUSR = libc::S_IXUSR;
+        const RGRP = libc::S_IRGRP;
+        const WGRP = libc::S_IWGRP;
+        const XGRP = libc::S_IXGRP;
+        const ROTH = libc::S_IROTH;
+        const WOTH = libc::S_IWOTH;
+        const XOTH = libc::S_IXOTH;
+    }
 }
 
 fn main() {
-    // Building flags for C call
-    let options = COptions::VERBOSE | COptions::DEBUG;
-    println!("Options: {:?}", options);
+    // Building flags for open() syscall
+    let flags = OpenFlags::WRONLY | OpenFlags::CREAT | OpenFlags::TRUNC;
 
-    // Passing to C function (using Into)
-    c_library_init(options.into());
+    println!("Open flags: {:?}", flags);
+    println!("Raw flags: {:#x}", flags.bits());
 
-    // Alternative: using .bits()
-    c_library_init(options.bits());
+    #[cfg(unix)]
+    {
+        let mode = FileMode::RUSR | FileMode::WUSR | FileMode::RGRP | FileMode::ROTH;
+        println!("File mode: {:?}", mode);
+        println!("Raw mode: {:#o}", mode.bits());
 
-    // Receiving flags from C
-    let result = c_library_process(options.into());
-    let result_flags: COptions = result.into();
-    println!("Result flags: {:?}", result_flags);
+        // Example: calling libc::open (unsafe)
+        let path = std::ffi::CString::new("/tmp/neobit_test.txt").unwrap();
+        let fd = unsafe { libc::open(path.as_ptr(), flags.bits(), mode.bits()) };
+
+        if fd >= 0 {
+            println!("File opened successfully, fd = {}", fd);
+            unsafe { libc::close(fd) };
+        } else {
+            println!("Failed to open file");
+        }
+
+        // Checking mode
+        println!("Mode contains WUSR? {}", mode.contains(FileMode::WUSR));
+    }
+
+    #[cfg(not(unix))]
+    {
+        println!("File mode operations are only available on Unix platforms");
+    }
+
+    // Checking flags
     println!(
-        "Result contains VERBOSE? {}",
-        result_flags.contains(COptions::VERBOSE)
+        "\nFlags contain CREAT? {}",
+        flags.contains(OpenFlags::CREAT)
     );
 
-    // Unknown bits are preserved (important for forward compatibility)
-    println!("Unknown bits preserved: {:#x}", result_flags.bits());
-
-    // Warning about complement on signed types
-    println!("\n--- Signed complement warning ---");
-    let flags = COptions::VERBOSE;
-    let complement = !flags;
-    println!("!VERBOSE = {} (two's complement)", complement.bits());
-    println!("Use .difference() instead for removing flags:");
-
-    let all_but_verbose = COptions::ALL.difference(COptions::VERBOSE);
-    println!("ALL - VERBOSE = {:?}", all_but_verbose);
+    // Modifying flags
+    let mut flags = flags;
+    flags.insert(OpenFlags::APPEND);
+    flags.remove(OpenFlags::TRUNC);
+    println!("Modified flags: {:?}", flags);
 }
