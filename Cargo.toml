@@ -16,4 +16,4 @@ default = []
 std = []
 
 [dev-dependencies]
-libc = "0.2.163"
+libc = "0.2"
