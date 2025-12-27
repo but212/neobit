@@ -8,9 +8,6 @@ neobit! {
         const READ    = 0b001;
         const WRITE   = 0b010;
         const EXECUTE = 0b100;
-        const ALL     = Self::READ.union(Self::WRITE).union(Self::EXECUTE).bits();
-        const RW      = Self::READ.union(Self::WRITE).bits();
-        const RX      = Self::READ.union(Self::EXECUTE).bits();
     }
 }
 
@@ -35,14 +32,27 @@ fn main() {
     println!("After toggle WRITE: {:?}", perms);
 
     // Using operators
-    let script_perms = Permissions::RX;
+    let script_perms = Permissions::READ.union(Permissions::EXECUTE);
     let combined = perms | script_perms;
     println!("Combined: {:?}", combined);
 
     // Checking intersections
-    if perms.intersects(Permissions::RW) {
+    let rw_perms = Permissions::READ.union(Permissions::WRITE);
+    if perms.intersects(rw_perms) {
         println!("Has at least one of READ or WRITE");
     }
+
+    // Using all() method
+    let all = Permissions::all();
+    println!("All permissions: {:?}", all);
+    println!(
+        "All contains all flags? {}",
+        all.contains(
+            Permissions::READ
+                .union(Permissions::WRITE)
+                .union(Permissions::EXECUTE)
+        )
+    );
 
     // Binary representation
     println!("Binary: {:08b}", perms.bits());

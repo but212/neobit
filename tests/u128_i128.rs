@@ -7,7 +7,6 @@ neobit! {
         const C = 0x0000_0000_0000_0004;
         const D = 0x8000_0000_0000_0000; // 최상위 비트
         const AB = Self::A.union(Self::B).bits();
-        const ALL = Self::A.union(Self::B).union(Self::C).union(Self::D).bits();
     }
 }
 
@@ -31,7 +30,7 @@ fn test_u128_high_bit() {
 
 #[test]
 fn test_u128_all_bits() {
-    let flags = Flags128::ALL;
+    let flags = Flags128::all();
     assert!(flags.contains(Flags128::A));
     assert!(flags.contains(Flags128::B));
     assert!(flags.contains(Flags128::C));

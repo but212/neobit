@@ -8,14 +8,13 @@ neobit! {
         const D = 1 << 3;
         const AB = Self::A.union(Self::B).bits();
         const CD = Self::C.union(Self::D).bits();
-        const ALL = Self::AB.union(Self::CD).bits();
     }
 }
 
 // Compile-time constants
 const CONST_UNION: Flags = Flags::A.union(Flags::B);
 const CONST_INTERSECTION: Flags = Flags::AB.intersection(Flags::A);
-const CONST_DIFFERENCE: Flags = Flags::ALL.difference(Flags::AB);
+const CONST_DIFFERENCE: Flags = Flags::all().difference(Flags::AB);
 const CONST_SYMMETRIC_DIFF: Flags = Flags::AB.symmetric_difference(Flags::CD);
 const CONST_COMPLEMENT: Flags = Flags::A.complement();
 const CONST_EMPTY: Flags = Flags::empty();
@@ -40,7 +39,7 @@ fn test_const_difference() {
 #[test]
 fn test_const_symmetric_difference() {
     // AB ^ CD = A | B | C | D (since no overlap)
-    assert_eq!(CONST_SYMMETRIC_DIFF, Flags::ALL);
+    assert_eq!(CONST_SYMMETRIC_DIFF, Flags::all());
 }
 
 #[test]
@@ -83,4 +82,21 @@ fn test_const_chaining() {
     assert!(COMPLEX.contains(Flags::A));
     assert!(!COMPLEX.contains(Flags::B));
     assert!(COMPLEX.contains(Flags::C));
+}
+
+#[test]
+fn test_const_all() {
+    // Test all() in const context
+    const ALL_FLAGS: Flags = Flags::all();
+    const ALL_BITS: u32 = Flags::all().bits();
+
+    assert_eq!(ALL_FLAGS.bits(), 0b1111);
+    assert_eq!(ALL_BITS, 0b1111);
+    assert!(ALL_FLAGS.contains(Flags::A));
+    assert!(ALL_FLAGS.contains(Flags::B));
+    assert!(ALL_FLAGS.contains(Flags::C));
+    assert!(ALL_FLAGS.contains(Flags::D));
+
+    // Test that all() contains the manual ALL constant
+    assert!(ALL_FLAGS.contains(Flags::AB.union(Flags::CD)));
 }

@@ -5,8 +5,6 @@ neobit! {
         const READ    = 0b001;
         const WRITE   = 0b010;
         const EXECUTE = 0b100;
-        const ALL     = Self::READ.union(Self::WRITE).union(Self::EXECUTE).bits();
-        const RW      = Self::READ.union(Self::WRITE).bits();
     }
 }
 
@@ -18,6 +16,16 @@ fn test_creation() {
     let flags = Permissions::empty();
     assert!(flags.is_empty());
 
+    // Test all() method
+    let all = Permissions::all();
+    assert_eq!(all.bits(), 0b111);
+    assert!(all.contains(Permissions::READ));
+    assert!(all.contains(Permissions::WRITE));
+    assert!(all.contains(Permissions::EXECUTE));
+}
+
+#[test]
+fn test_from_bits_retain() {
     let flags = Permissions::from_bits_retain(0xFF);
     assert_eq!(flags.bits(), 0xFF);
 }
@@ -33,11 +41,11 @@ fn test_operators() {
     assert_eq!(r, Permissions::READ);
 
     // XOR
-    let x = Permissions::READ ^ Permissions::RW;
+    let x = Permissions::READ ^ Permissions::READ.union(Permissions::WRITE);
     assert_eq!(x, Permissions::WRITE);
 
     // SUB
-    let w = Permissions::RW - Permissions::READ;
+    let w = Permissions::READ.union(Permissions::WRITE) - Permissions::READ;
     assert_eq!(w, Permissions::WRITE);
 
     // NOT
@@ -50,13 +58,13 @@ fn test_assign_operators() {
     let mut flags = Permissions::READ;
 
     flags |= Permissions::WRITE;
-    assert_eq!(flags, Permissions::RW);
+    assert_eq!(flags, Permissions::READ.union(Permissions::WRITE));
 
     flags &= Permissions::READ;
     assert_eq!(flags, Permissions::READ);
 
     flags ^= Permissions::WRITE;
-    assert_eq!(flags, Permissions::RW);
+    assert_eq!(flags, Permissions::READ.union(Permissions::WRITE));
 
     flags -= Permissions::WRITE;
     assert_eq!(flags, Permissions::READ);
@@ -64,29 +72,35 @@ fn test_assign_operators() {
 
 #[test]
 fn test_contains() {
-    let all = Permissions::ALL;
+    let all = Permissions::all();
+    let rw = Permissions::READ.union(Permissions::WRITE);
 
     assert!(all.contains(Permissions::READ));
     assert!(all.contains(Permissions::WRITE));
     assert!(all.contains(Permissions::EXECUTE));
-    assert!(all.contains(Permissions::RW));
-    assert!(all.contains(Permissions::ALL));
+    assert!(all.contains(rw));
+    assert!(all.contains(Permissions::all()));
 
-    let rw = Permissions::RW;
     assert!(rw.contains(Permissions::READ));
     assert!(rw.contains(Permissions::WRITE));
     assert!(!rw.contains(Permissions::EXECUTE));
-    assert!(!rw.contains(Permissions::ALL));
+    assert!(!rw.contains(Permissions::all()));
 }
 
 #[test]
 fn test_intersects() {
-    let rw = Permissions::RW;
+    let rw = Permissions::READ.union(Permissions::WRITE);
+    let all = Permissions::all();
 
     assert!(rw.intersects(Permissions::READ));
     assert!(rw.intersects(Permissions::WRITE));
     assert!(!rw.intersects(Permissions::EXECUTE));
-    assert!(rw.intersects(Permissions::ALL));
+    assert!(rw.intersects(all));
+
+    assert!(all.intersects(Permissions::READ));
+    assert!(all.intersects(Permissions::WRITE));
+    assert!(all.intersects(Permissions::EXECUTE));
+    assert!(all.intersects(rw));
 }
 
 #[test]
@@ -94,13 +108,13 @@ fn test_insert_remove_toggle() {
     let mut flags = Permissions::READ;
 
     flags.insert(Permissions::WRITE);
-    assert_eq!(flags, Permissions::RW);
+    assert_eq!(flags, Permissions::READ.union(Permissions::WRITE));
 
     flags.remove(Permissions::READ);
     assert_eq!(flags, Permissions::WRITE);
 
     flags.toggle(Permissions::READ);
-    assert_eq!(flags, Permissions::RW);
+    assert_eq!(flags, Permissions::READ.union(Permissions::WRITE));
 
     flags.toggle(Permissions::READ);
     assert_eq!(flags, Permissions::WRITE);
@@ -115,7 +129,7 @@ fn test_default() {
 #[test]
 fn test_equality() {
     let a = Permissions::READ | Permissions::WRITE;
-    let b = Permissions::RW;
+    let b = Permissions::READ.union(Permissions::WRITE);
     assert_eq!(a, b);
 
     let c = Permissions::READ;
@@ -155,7 +169,7 @@ fn test_empty() {
 }
 
 #[test]
-fn test_from_bits_retain() {
+fn test_from_bits_retain_testflags() {
     let flags = TestFlags::from_bits_retain(0xFF);
     assert_eq!(flags.bits(), 0xFF);
 }

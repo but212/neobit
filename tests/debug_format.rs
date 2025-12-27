@@ -2,11 +2,9 @@ use neobit::neobit;
 
 neobit! {
     pub struct Flags: u8 {
-        const READ    = 0b0001;
-        const WRITE   = 0b0010;
-        const EXECUTE = 0b0100;
-        const ALL     = Self::READ.union(Self::WRITE).union(Self::EXECUTE).bits();
-        const RW      = Self::READ.union(Self::WRITE).bits();
+        const READ    = 0b001;
+        const WRITE   = 0b010;
+        const EXECUTE = 0b100;
     }
 }
 
@@ -34,10 +32,11 @@ fn test_debug_all_flags() {
 #[test]
 fn test_debug_composite_constant() {
     // Composite constants are expanded to their single-bit components
-    let debug = format!("{:?}", Flags::ALL);
+    let debug = format!("{:?}", Flags::all());
     assert_eq!(debug, "Flags(READ | WRITE | EXECUTE)");
 
-    let debug = format!("{:?}", Flags::RW);
+    let rw = Flags::READ.union(Flags::WRITE);
+    let debug = format!("{:?}", rw);
     assert_eq!(debug, "Flags(READ | WRITE)");
 }
 

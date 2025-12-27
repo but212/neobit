@@ -13,13 +13,16 @@
 //!         const READ    = 0b001;
 //!         const WRITE   = 0b010;
 //!         const EXECUTE = 0b100;
-//!         const ALL     = Self::READ.union(Self::WRITE).union(Self::EXECUTE).bits();
 //!     }
 //! }
 //!
 //! let perms = Permissions::READ | Permissions::WRITE;
 //! assert!(perms.contains(Permissions::READ));
 //! println!("{:?}", perms);  // Permissions(READ | WRITE)
+//!
+//! // Get all flags
+//! let all = Permissions::all();
+//! assert!(all.contains(Permissions::READ | Permissions::WRITE | Permissions::EXECUTE));
 //! ```
 //!
 //! ## Design Philosophy
@@ -52,12 +55,12 @@
 ///         const A = 0b0001;
 ///         const B = 0b0010;
 ///         const C = 0b0100;
-///         const AB = Self::A.union(Self::B).bits();
 ///     }
 /// }
 ///
 /// let flags = Flags::A | Flags::B;
-/// assert_eq!(flags, Flags::AB);
+/// let all = Flags::all();
+/// assert!(all.contains(flags));
 /// ```
 #[macro_export]
 macro_rules! neobit {
@@ -186,6 +189,24 @@ macro_rules! neobit {
             #[inline(always)]
             pub const fn complement(self) -> Self {
                 Self { bits: !self.bits }
+            }
+
+            /// Returns the union of all defined flags.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let all = Flags::all();
+            /// assert!(all.contains(Flags::A));
+            /// assert!(all.contains(Flags::B));
+            /// ```
+            #[inline(always)]
+            pub const fn all() -> Self {
+                let mut result = Self { bits: 0 };
+                $(result.bits |= $flag_value;)*
+                result
             }
 
             /// Returns `true` if no flags are set.
