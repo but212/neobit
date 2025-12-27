@@ -9,11 +9,11 @@ Zero-dependency, lightweight bitflags with readable debug output.
 ## Features
 
 - **Zero dependencies** - Pure Rust, no external crates
-- **Lightweight** - ~260 lines of code
 - **Readable debug output** - `Flags(READ | WRITE)` instead of `Flags { bits: 3 }`
 - **`const fn` operations** - Use in const contexts with `union()`, `intersection()`, etc.
 - **`no_std` compatible** - Works in embedded environments
 - **All integer types** - Supports `u8`-`u128` and `i8`-`i128`
+- **Built-in `all()` method** - Get all flags without manual constants
 
 ## Quick Start
 
@@ -25,7 +25,6 @@ neobit! {
         const READ    = 0b001;
         const WRITE   = 0b010;
         const EXECUTE = 0b100;
-        const ALL     = Self::READ.union(Self::WRITE).union(Self::EXECUTE);
     }
 }
 
@@ -36,8 +35,38 @@ fn main() {
     assert!(!perms.contains(Permissions::EXECUTE));
 
     println!("{:?}", perms);  // Permissions(READ | WRITE)
+    
+    // Get all flags
+    let all = Permissions::all();
+    assert!(all.contains(Permissions::READ | Permissions::WRITE | Permissions::EXECUTE));
 }
 ```
+
+## The `all()` Method
+
+neobit provides a built-in `all()` method that returns the union of all defined flags:
+
+```rust
+neobit! {
+    pub struct Flags: u8 {
+        const A = 0b001;
+        const B = 0b010;
+        const C = 0b100;
+    }
+}
+
+// No need for manual ALL constants!
+let all = Flags::all();  // Contains A | B | C
+
+// Works in const context too
+const ALL_FLAGS: Flags = Flags::all();
+```
+
+Benefits:
+
+- **Less boilerplate** - No need to manually define ALL constants
+- **Always in sync** - Automatically includes all flags, even when new ones are added
+- **Const-compatible** - Can be used in compile-time expressions
 
 ## Who Should Use This
 
@@ -95,6 +124,7 @@ All operators have `*Assign` variants (`|=`, `&=`, etc.).
 ```rust
 // Construction
 Flags::empty()
+Flags::all()                    // All defined flags
 Flags::from_bits_retain(bits)
 
 // Access
@@ -125,11 +155,11 @@ neobit! {
     pub struct Flags: u32 {
         const A = 1 << 0;
         const B = 1 << 1;
-        const AB = Self::A.union(Self::B).bits();  // const fn
     }
 }
 
 const MASK: Flags = Flags::A.union(Flags::B);  // Compile-time
+const ALL_FLAGS: Flags = Flags::all();         // All flags in const context
 ```
 
 ### Type Conversion
@@ -160,6 +190,7 @@ let complement = !SignedFlags::A;
 // u8: !0b0001 = 254
 
 // Prefer difference() for removing flags:
+let all = SignedFlags::all();
 let without_a = all.difference(SignedFlags::A);
 ```
 
@@ -168,11 +199,11 @@ let without_a = all.difference(SignedFlags::A);
 Single-bit flags are shown by name. Composite constants are expanded:
 
 ```rust
-println!("{:?}", Flags::READ);           // Flags(READ)
-println!("{:?}", Flags::READ | Flags::WRITE);  // Flags(READ | WRITE)
-println!("{:?}", Flags::ALL);            // Flags(READ | WRITE | EXECUTE)
-println!("{:?}", Flags::empty());        // Flags(empty)
-println!("{:?}", Flags::from_bits_retain(0x80));  // Flags(0x80)
+println!("{:?}", Flags::READ);                    // Flags(READ)
+println!("{:?}", Flags::READ | Flags::WRITE);     // Flags(READ | WRITE)
+println!("{:?}", Flags::all());                    // Flags(READ | WRITE | EXECUTE)
+println!("{:?}", Flags::empty());                  // Flags(empty)
+println!("{:?}", Flags::from_bits_retain(0x80));   // Flags(0x80)
 ```
 
 ## Minimum Rust Version
