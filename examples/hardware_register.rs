@@ -21,8 +21,7 @@ neobit! {
         const SPEED_HIGH   = 0b10 << 4;
         const SPEED_VHIGH  = 0b11 << 4;
 
-        const OPEN_DRAIN   = 1 << 6;      // Bit 6: Output type
-        const PUSH_PULL    = 0 << 6;
+        const OPEN_DRAIN   = 1 << 6;      // Bit 6: Output type (absence implies push-pull)
     }
 }
 
@@ -56,15 +55,12 @@ neobit! {
         const TCIE         = 1 << 1;   // Transfer complete interrupt enable
         const HTIE         = 1 << 2;   // Half transfer interrupt enable
         const TEIE         = 1 << 3;   // Transfer error interrupt enable
-        const DIR_P2M      = 0 << 4;   // Peripheral-to-memory
-        const DIR_M2P      = 1 << 4;   // Memory-to-peripheral
+        const DIR_M2P      = 1 << 4;   // Memory-to-peripheral (absence implies peripheral-to-memory)
         const CIRC         = 1 << 5;   // Circular mode
         const PINC         = 1 << 6;   // Peripheral increment
         const MINC         = 1 << 7;   // Memory increment
-        const PSIZE_8      = 0b00 << 8;
         const PSIZE_16     = 0b01 << 8;
         const PSIZE_32     = 0b10 << 8;
-        const MSIZE_8      = 0b00 << 10;
         const MSIZE_16     = 0b01 << 10;
         const MSIZE_32     = 0b10 << 10;
     }
@@ -81,11 +77,8 @@ fn write_register(name: &str, value: u32) {
 fn main() {
     println!("=== GPIO Configuration ===\n");
 
-    // Configure GPIO as output with pull-up, high speed
-    let gpio_output = GpioConfig::MODE_OUTPUT
-        | GpioConfig::PULL_UP
-        | GpioConfig::SPEED_HIGH
-        | GpioConfig::PUSH_PULL;
+    // Configure GPIO as output with pull-up, high speed (push-pull is default, no flag needed)
+    let gpio_output = GpioConfig::MODE_OUTPUT | GpioConfig::PULL_UP | GpioConfig::SPEED_HIGH;
 
     write_register("GPIOA_MODER", gpio_output.bits());
     println!("Config: {:?}\n", gpio_output);
@@ -150,9 +143,10 @@ fn main() {
     let current_spi = SpiControl::from_bits_retain(0x0305); // Simulated register value
     println!("Current SPI register: {:?}", current_spi);
 
-    // Modify only specific bits (change baud rate)
+    // Modify only specific bits (change baud rate) using a mask
     let mut new_spi = current_spi;
-    new_spi.remove(SpiControl::BR_2 | SpiControl::BR_4 | SpiControl::BR_8 | SpiControl::BR_16);
+    // Clear all baud rate bits first (BR_2 is 0b000, so we need to clear the field)
+    new_spi.remove(SpiControl::BR_4 | SpiControl::BR_8 | SpiControl::BR_16);
     new_spi.insert(SpiControl::BR_16);
 
     println!("Modified SPI (new baud rate): {:?}", new_spi);

@@ -44,7 +44,7 @@ impl TcpPacket {
     }
 
     fn is_connection_close(&self) -> bool {
-        self.flags.contains(TcpFlags::FIN) || self.flags.contains(TcpFlags::RST)
+        self.flags.intersects(TcpFlags::FIN | TcpFlags::RST)
     }
 }
 
