@@ -134,6 +134,7 @@ macro_rules! neobit {
                     None
                 }
             }
+
             /// Creates a flags value from raw bits, truncating any unknown bits.
             ///
             /// This is equivalent to `from_bits_retain(bits & Self::all().bits())`.
@@ -148,7 +149,7 @@ macro_rules! neobit {
             /// ```
             #[inline(always)]
             pub const fn from_bits_truncate(bits: $int_ty) -> Self {
-                Self { bits: bits & Self::all().bits }
+                Self::from_bits_retain(bits & Self::all().bits())
             }
 
 
