@@ -59,20 +59,6 @@ fn main() {
 - Embedded systems (`no_std`)
 - Security-sensitive projects requiring easy code audit
 
-## neobit vs bitflags
-
-|  Aspect  |  neobit  |  bitflags  |
-|----------|----------|------------|
-|  Focus   | Bit operations only | Bit operations + parsing + iteration + serde |
-|  Code size | ~520 lines | ~3,500+ lines |
-|  Dependencies | Zero | Optional (serde, arbitrary, bytemuck) |
-|  `complement()` | Pure bitwise NOT | Masked to known flags |
-|  `From<T>` | Included | Manual conversion needed |
-
-Choose **neobit** for FFI, embedded, or when you want simplicity.
-
-Choose **bitflags** if you need string parsing, iteration, or serde integration.
-
 ## Limitations
 
 ### Composite Constants in Macro
