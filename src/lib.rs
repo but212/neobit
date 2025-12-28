@@ -167,24 +167,26 @@ macro_rules! neobit {
                 self.bits
             }
 
-            /// Conditionally sets the lowest bit based on a boolean condition.
+            /// Sets or removes the specified flags based on a boolean condition.
             ///
-            /// If `condition` is `true`, the lowest bit (0x1) is set.
-            /// If `condition` is `false`, the flags remain unchanged.
+            /// If `condition` is `true`, the flags in `other` are inserted.
+            /// If `condition` is `false`, the flags in `other` are removed.
             ///
             /// # Example
             ///
             /// ```rust
             /// # use neobit::neobit;
             /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
-            /// let flags = Flags::empty().set(true);
-            /// assert_eq!(flags.bits(), 1);
-            /// let flags = Flags::B.set(false);
-            /// assert_eq!(flags.bits(), 2);
+            /// let mut flags = Flags::A;
+            /// flags.set(Flags::B, true);
+            /// assert_eq!(flags, Flags::A | Flags::B);
+            /// flags.set(Flags::A, false);
+            /// assert_eq!(flags, Flags::B);
             /// ```
             #[inline(always)]
-            pub const fn set(self, condition: bool) -> Self {
-                Self { bits: self.bits | condition as $int_ty }
+            pub fn set(&mut self, other: Self, condition: bool) {
+                let m = (condition as $int_ty).wrapping_neg();
+                self.bits = (self.bits & !other.bits) | (other.bits & m);
             }
 
             /// Returns the union of two flags (OR).

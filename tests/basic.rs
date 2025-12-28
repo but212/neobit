@@ -61,9 +61,12 @@ fn test_operators() {
 
 #[test]
 fn test_set() {
-    let flags = Permissions::empty().set(true);
-    assert_eq!(flags.bits(), 1);
-    let flags = Permissions::WRITE.set(false);
+    let mut flags = Permissions::empty();
+    flags.set(Permissions::READ, true);
+    assert_eq!(flags.bits(), 0b001);
+    flags.set(Permissions::WRITE, true);
+    assert_eq!(flags.bits(), 0b011);
+    flags.set(Permissions::READ, false);
     assert_eq!(flags.bits(), 0b010);
 }
 
