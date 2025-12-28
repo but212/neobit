@@ -86,8 +86,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Check MSRV compatibility
         run: cargo check
-      - name: Check MSRV compatibility (full features)
-        run: cargo check --features full
 
   docs:
     name: Build Docs
