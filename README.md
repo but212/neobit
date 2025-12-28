@@ -117,7 +117,7 @@ flags.set(other, condition) // Set or remove based on bool
 ### Operators
 
 | Operator | Meaning | const fn equivalent |
-| |----------|---------|---------------------| |
+|----------|---------|---------------------|
 | `\|` | Union | `union()` |
 | `&` | Intersection | `intersection()` |
 | `^` | Symmetric difference | `symmetric_difference()` |
