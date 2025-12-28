@@ -34,6 +34,9 @@ fn test_from_bits_retain() {
 fn test_from_bits() {
     let flags = Permissions::from_bits(0b111);
     assert_eq!(flags.expect("Invalid bits").bits(), 0b111);
+
+    let invalid = Permissions::from_bits(0xFF);
+    assert!(invalid.is_none());
 }
 
 #[test]
