@@ -137,12 +137,12 @@ fn main() {
     const COMPLEMENT: Features = DEBUG_MODE.complement();
     println!("¬Debug (bitwise): {:?}", COMPLEMENT);
 
-    println!("\n=== Compile-Time Assertions ===");
+    println!("\n=== Runtime Assertions ===");
 
-    // These are checked at compile time
-    const _: () = assert!(PRODUCTION_MODE.is_production_safe());
-    const _: () = assert!(PRODUCTION_MODE.has_observability());
-    const _: () = assert!(!NO_FEATURES.has_observability());
+    // These checks are performed at runtime (const assert! requires nightly)
+    assert!(PRODUCTION_MODE.is_production_safe());
+    assert!(PRODUCTION_MODE.has_observability());
+    assert!(!NO_FEATURES.has_observability());
 
-    println!("All compile-time assertions passed! ✓");
+    println!("All assertions passed! ✓");
 }
