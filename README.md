@@ -4,13 +4,13 @@
 [![Docs](https://docs.rs/neobit/badge.svg)](https://docs.rs/neobit)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/but212/neobit)
 
-A minimal bitflags library focused on what bit operations actually need.
+A zero-dependency, bitflags macro for systems programming. Designed for `no_std` environments, fast compilation, and drop-in replacements.
 
 ## Why neobit?
 
 Bit operations are simple. The library should be too.
 
-neobit is a single ~520-line file that provides union, intersection, difference, complement, and membership testing. Nothing more, nothing less.
+neobit provides union, intersection, difference, complement, and membership testing. Nothing more, nothing less.
 
 ## Quick Start
 
@@ -44,7 +44,6 @@ fn main() {
 
 ## Features
 
-- **Minimal** - Single file, ~520 lines, easy to audit
 - **Zero dependencies** - Pure Rust, nothing else
 - **`no_std` compatible** - Works in embedded environments
 - **All integer types** - `u8`-`u128` and `i8`-`i128`
