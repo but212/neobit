@@ -145,7 +145,8 @@ fn main() {
 
     // Modify only specific bits (change baud rate) using a mask
     let mut new_spi = current_spi;
-    new_spi.remove(SpiControl::from_bits_retain(0b111 << 3));
+    // Clear all baud rate bits first (BR_2 is 0b000, so we need to clear the field)
+    new_spi.remove(SpiControl::BR_4 | SpiControl::BR_8 | SpiControl::BR_16);
     new_spi.insert(SpiControl::BR_16);
 
     println!("Modified SPI (new baud rate): {:?}", new_spi);
