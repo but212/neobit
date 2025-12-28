@@ -193,6 +193,12 @@ fn test_empty() {
 }
 
 #[test]
+fn test_from_bits_testflags() {
+    let flags = TestFlags::from_bits(0b111);
+    assert_eq!(flags.expect("Invalid bits").bits(), 0b111);
+}
+
+#[test]
 fn test_from_bits_retain_testflags() {
     let flags = TestFlags::from_bits_retain(0xFF);
     assert_eq!(flags.bits(), 0xFF);

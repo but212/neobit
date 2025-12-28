@@ -127,12 +127,9 @@ macro_rules! neobit {
             #[inline(always)]
             pub const fn from_bits(bits: $int_ty) -> Option<Self> {
                 let all = Self::all().bits;
+                let valid = (bits & !all) == 0;
 
-                if (bits & !all) == 0 {
-                    Some(Self { bits })
-                } else {
-                    None
-                }
+                [None, Some(Self { bits })][valid as usize]
             }
 
             /// Creates a flags value from raw bits, retaining all bits.
