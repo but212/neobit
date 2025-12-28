@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.2] - 2025-12-29
+
+### Changed
+
+- Fixed markdown table formatting in operators section
+
 ## [1.0.1] - 2025-12-29
 
 ### Changed
