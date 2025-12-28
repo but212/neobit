@@ -13,4 +13,3 @@ readme = "README.md"
 
 [features]
 default = []
-std = []
