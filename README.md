@@ -1,5 +1,8 @@
 # neobit
 
+[![Crates.io](https://img.shields.io/crates/v/neobit)](https://crates.io/crates/neobit)
+[![Docs](https://docs.rs/neobit/badge.svg)](https://docs.rs/neobit)
+
 Zero-dependency, lightweight bitflags with readable debug output.
 
 ## Features
