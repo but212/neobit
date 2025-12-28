@@ -81,7 +81,7 @@ macro_rules! neobit {
         }
     ) => {
         $(#[$meta])*
-        #[derive(Copy, Clone, Eq, PartialEq, Hash)]
+        #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
         $vis struct $name {
             bits: $int_ty,
         }
@@ -134,6 +134,24 @@ macro_rules! neobit {
                     None
                 }
             }
+
+            /// Creates a flags value from raw bits, truncating any unknown bits.
+            ///
+            /// This is equivalent to `from_bits_retain(bits & Self::all().bits())`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; } }
+            /// let flags = Flags::from_bits_truncate(0b101); // 0b101 & 0b001 = 0b001
+            /// assert_eq!(flags, Flags::A);
+            /// ```
+            #[inline(always)]
+            pub const fn from_bits_truncate(bits: $int_ty) -> Self {
+                Self::from_bits_retain(bits & Self::all().bits())
+            }
+
 
             /// Creates a flags value from raw bits, retaining all bits.
             ///
@@ -479,6 +497,24 @@ macro_rules! neobit {
         impl core::fmt::Binary for $name {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 core::fmt::Binary::fmt(&self.bits, f)
+            }
+        }
+
+        impl core::fmt::LowerHex for $name {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                core::fmt::LowerHex::fmt(&self.bits, f)
+            }
+        }
+
+        impl core::fmt::UpperHex for $name {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                core::fmt::UpperHex::fmt(&self.bits, f)
+            }
+        }
+
+        impl core::fmt::Octal for $name {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                core::fmt::Octal::fmt(&self.bits, f)
             }
         }
     };
