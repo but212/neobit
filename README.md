@@ -75,27 +75,27 @@ Benefits:
 
 ### Composite Constants in Macro
 
-The `neobit!` macro only supports single-bit constants directly:
+Composite constants can be defined in the macro, but require using `.union().bits()` syntax:
 
 ```rust
 neobit! {
     pub struct Flags: u8 {
-        const A = 0b001;     // ✅ Single bit - OK
-        const B = 0b010;     // ✅ Single bit - OK
-        const AB = 0b011;    // ❌ Multi-bit - NOT allowed
+        const A = 0b001;     // ✅ Single bit
+        const B = 0b010;     // ✅ Single bit
+        const AB = Self::A.union(Self::B).bits();  // ✅ Composite constant - requires .bits()
     }
 }
 ```
 
-For composite constants, use the `union()` method:
+Alternatively, define composite constants outside the macro for cleaner syntax:
 
 ```rust
 impl Flags {
-    pub const AB: Self = Self::A.union(Self::B);  // ✅ Works fine
+    pub const AB: Self = Self::A.union(Self::B);  // ✅ Cleaner approach
 }
 ```
 
-This is an intentional design choice to keep the macro simple and avoid bit validation complexity.
+The `.bits()` requirement in the macro is due to how Rust evaluates const expressions in macro contexts.
 
 ## Who Should Use This
 
@@ -127,13 +127,14 @@ let invalid = Permissions::from_bits(0xFF);  // None
 let flags = Permissions::from_bits_retain(0xFF);  // All bits kept
 ```
 
-This is a deliberate trade-off:
+This represents different design choices:
 
 | Aspect | neobit | bitflags |
 |--------|--------|----------|
-| C FFI / Registers | No data loss | May lose unknown bits |
-| Protocol parsing | Future-compatible | Version mismatch issues |
-| Beginner safety | No validation | Option protection |
+| Default construction | `From<T>` uses `from_bits_retain()` (unchecked) | Requires explicit construction |
+| Unknown bits handling | Preserved by default | Validated by default |
+| Validation available | ✅ `from_bits()` returns `Option<Self>` | ✅ Built-in validation |
+| Best for | FFI, protocols, hardware registers | Application-level flags |
 
 ## API Overview
 
