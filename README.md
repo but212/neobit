@@ -61,13 +61,13 @@ fn main() {
 
 ## neobit vs bitflags
 
-| | neobit | bitflags |
-|--|--------|----------|
-| Focus | Bit operations only | Bit operations + parsing + iteration + serde |
-| Code size | ~520 lines | ~3,500+ lines |
-| Dependencies | Zero | Optional (serde, arbitrary, bytemuck) |
-| `complement()` | Pure bitwise NOT | Masked to known flags |
-| `From<T>` | Included | Manual conversion needed |
+|  Aspect  |  neobit  |  bitflags  |
+|----------|----------|------------|
+|  Focus   | Bit operations only | Bit operations + parsing + iteration + serde |
+|  Code size | ~520 lines | ~3,500+ lines |
+|  Dependencies | Zero | Optional (serde, arbitrary, bytemuck) |
+|  `complement()` | Pure bitwise NOT | Masked to known flags |
+|  `From<T>` | Included | Manual conversion needed |
 
 Choose **neobit** for FFI, embedded, or when you want simplicity.
 
@@ -131,7 +131,7 @@ flags.set(other, condition) // Set or remove based on bool
 ### Operators
 
 | Operator | Meaning | const fn equivalent |
-|----------|---------|---------------------|
+| |----------|---------|---------------------| |
 | `\|` | Union | `union()` |
 | `&` | Intersection | `intersection()` |
 | `^` | Symmetric difference | `symmetric_difference()` |
@@ -206,12 +206,11 @@ let without_a = all.difference(SignedFlags::A);
 
 ```rust
 use neobit::neobit;
-use std::ffi::c_uint;
 
 // Define flags matching a C header
 neobit! {
     #[repr(transparent)]
-    pub struct RegisterFlags: c_uint {
+    pub struct RegisterFlags: u32 {
         const READY   = 0x01;
         const ERROR   = 0x02;
         const BUSY    = 0x04;
@@ -221,14 +220,14 @@ neobit! {
 
 // Safe Rust wrapper around C functions
 fn read_status() -> RegisterFlags {
-    let raw = unsafe { read_register() };
+    let raw = read_register();
     RegisterFlags::from_bits_retain(raw)  // Preserves all bits!
 }
 
 fn set_ready_flag() {
     let current = read_status();
     let updated = current | RegisterFlags::READY;
-    unsafe { write_register(updated.bits()) };
+    write_register(updated.bits());
 }
 
 // See examples/c_ffi_simple.rs for a complete runnable example

@@ -3,13 +3,12 @@
 //! Demonstrates using neobit for C interoperability with hardware registers.
 
 use neobit::neobit;
-use std::ffi::c_uint;
 
 // Define flags matching a C header
 neobit! {
     /// Hardware register flags (matches C definition)
     #[repr(transparent)]
-    pub struct RegisterFlags: c_uint {
+    pub struct RegisterFlags: u32 {
         /// Ready bit
         const READY   = 0x01;
         /// Error bit
@@ -23,13 +22,13 @@ neobit! {
 
 // Mock implementations for demonstration
 #[no_mangle]
-pub extern "C" fn read_register() -> c_uint {
+pub extern "C" fn read_register() -> u32 {
     // Simulate a register with READY and DATA_RDY set
     RegisterFlags::READY.bits() | RegisterFlags::DATA_RDY.bits()
 }
 
 #[no_mangle]
-pub extern "C" fn write_register(value: c_uint) {
+pub extern "C" fn write_register(value: u32) {
     println!("Wrote register value: {:#010x}", value);
 }
 
@@ -38,7 +37,7 @@ pub extern "C" fn write_register(value: c_uint) {
 fn read_status() -> RegisterFlags {
     // In real C FFI, this would be unsafe
     // We use unsafe here to demonstrate the proper pattern
-    let raw = unsafe { read_register() };
+    let raw = read_register();
     RegisterFlags::from_bits_retain(raw)
 }
 
@@ -48,7 +47,7 @@ fn set_ready_flag() {
     let updated = current | RegisterFlags::READY;
     // In real C FFI, this would be unsafe
     // We use unsafe here to demonstrate the proper pattern
-    unsafe { write_register(updated.bits()) };
+    write_register(updated.bits());
 }
 
 #[allow(dead_code)]
@@ -57,7 +56,7 @@ fn clear_error_flag() {
     let updated = current & !RegisterFlags::ERROR;
     // In real C FFI, this would be unsafe
     // We use unsafe here to demonstrate the proper pattern
-    unsafe { write_register(updated.bits()) };
+    write_register(updated.bits());
 }
 
 fn main() {
