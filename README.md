@@ -71,6 +71,32 @@ Benefits:
 - **Always in sync** - Automatically includes all flags, even when new ones are added
 - **Const-compatible** - Can be used in compile-time expressions
 
+## Limitations
+
+### Composite Constants in Macro
+
+The `neobit!` macro only supports single-bit constants directly:
+
+```rust
+neobit! {
+    pub struct Flags: u8 {
+        const A = 0b001;     // ✅ Single bit - OK
+        const B = 0b010;     // ✅ Single bit - OK
+        const AB = 0b011;    // ❌ Multi-bit - NOT allowed
+    }
+}
+```
+
+For composite constants, use the `union()` method:
+
+```rust
+impl Flags {
+    pub const AB: Self = Self::A.union(Self::B);  // ✅ Works fine
+}
+```
+
+This is an intentional design choice to keep the macro simple and avoid bit validation complexity.
+
 ## Who Should Use This
 
 ### Good Fit
