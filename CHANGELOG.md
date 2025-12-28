@@ -13,7 +13,7 @@
 - Standard bitwise operators: `|`, `&`, `^`, `!`, `-` with `*Assign` variants
 - Methods: `empty()`, `bits()`, `is_empty()`, `is_all()`, `contains()`, `intersects()`, `insert()`, `remove()`, `toggle()`, `set()`
 - `no_std` compatibility for embedded systems
-- Trait implementations: `Default`, `From<T>`, `Into<T>`, `Debug`, `Copy`, `Clone`, `Eq`, `PartialEq`, `Hash`
+- Trait implementations: `Default`, `From<T>`, `Into<T>`, `Debug`, `Copy`, `Clone`, `Eq`, `PartialEq`, `Hash`, and operator traits (`BitOr`, `BitAnd`, `BitXor`, `Not`, `Sub` with `*Assign` variants)
 - Apache 2.0 and MIT dual licensing
 - Comprehensive documentation with examples
 - CI/CD infrastructure with GitHub Actions
@@ -28,4 +28,3 @@
 - clippy.toml for linting rules
 - rustfmt.toml for code formatting
 - deny.toml for dependency auditing
-- GitHub workflows for CI/CD
