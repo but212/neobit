@@ -4,7 +4,7 @@
 [![Docs](https://docs.rs/neobit/badge.svg)](https://docs.rs/neobit)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/but212/neobit)
 
-A zero-dependency, bitflags macro for systems programming. Designed for `no_std` environments, fast compilation, and drop-in replacements.
+A zero-dependency, bitflags macro for systems programming. Designed for `no_std` environments.
 
 ## Why neobit?
 
