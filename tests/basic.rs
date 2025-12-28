@@ -60,6 +60,14 @@ fn test_operators() {
 }
 
 #[test]
+fn test_set() {
+    let flags = Permissions::empty().set(true);
+    assert_eq!(flags.bits(), 1);
+    let flags = Permissions::WRITE.set(false);
+    assert_eq!(flags.bits(), 0b010);
+}
+
+#[test]
 fn test_assign_operators() {
     let mut flags = Permissions::READ;
 
@@ -130,6 +138,13 @@ fn test_insert_remove_toggle() {
 fn test_default() {
     let flags: Permissions = Default::default();
     assert!(flags.is_empty());
+}
+
+#[test]
+fn test_is_all() {
+    let all = Permissions::all();
+    assert!(all.is_all());
+    assert!(!Permissions::READ.is_all());
 }
 
 #[test]

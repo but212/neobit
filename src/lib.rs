@@ -167,6 +167,26 @@ macro_rules! neobit {
                 self.bits
             }
 
+            /// Conditionally sets the lowest bit based on a boolean condition.
+            ///
+            /// If `condition` is `true`, the lowest bit (0x1) is set.
+            /// If `condition` is `false`, the flags remain unchanged.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let flags = Flags::empty().set(true);
+            /// assert_eq!(flags.bits(), 1);
+            /// let flags = Flags::B.set(false);
+            /// assert_eq!(flags.bits(), 2);
+            /// ```
+            #[inline(always)]
+            pub const fn set(self, condition: bool) -> Self {
+                Self { bits: self.bits | condition as $int_ty }
+            }
+
             /// Returns the union of two flags (OR).
             ///
             /// This is the `const fn` equivalent of the `|` operator.
@@ -243,6 +263,21 @@ macro_rules! neobit {
             #[inline(always)]
             pub const fn is_empty(self) -> bool {
                 self.bits == 0
+            }
+
+            /// Returns `true` if all defined flags are set.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// assert!(Flags::all().is_all());
+            /// assert!(!(Flags::A).is_all());
+            /// ```
+            #[inline(always)]
+            pub const fn is_all(self) -> bool {
+                self.bits == Self::all().bits
             }
 
             /// Returns `true` if all flags in `other` are contained in `self`.
