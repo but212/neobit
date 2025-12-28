@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.1] - 2025-12-28
+
+### Added - 0.1.1
+
+- Added 6 comprehensive example files demonstrating various neobit use cases:
+  - `network_protocol.rs`: TCP flags, HTTP method flags, and protocol parsing
+  - `const_operations.rs`: Compile-time flag operations and configurations
+  - `hardware_register.rs`: Embedded systems GPIO, SPI, and DMA register manipulation
+  - `validation.rs`: Comparison of `from_bits()` vs `from_bits_retain()` with use case guidelines
+  - `composite_flags.rs`: Unix file permissions and common composite flag patterns
+  - `integer_types.rs`: Support for u8-u128 and signed integer types
+
 ## [0.1.0] - 2025-12-28
 
 ### Added - 0.1.0
