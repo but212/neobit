@@ -73,6 +73,30 @@ Choose **neobit** for FFI, embedded, or when you want simplicity.
 
 Choose **bitflags** if you need string parsing, iteration, or serde integration.
 
+## Limitations
+
+### Composite Constants in Macro
+
+Composite constants can be defined in the macro, but require using `.union().bits()` syntax:
+
+```rust
+neobit! {
+    pub struct Flags: u8 {
+        const A = 0b001;     // ✅ Single bit
+        const B = 0b010;     // ✅ Single bit
+        const AB = Self::A.union(Self::B).bits();  // ✅ Composite constant - requires .bits()
+    }
+}
+```
+
+Alternatively, define composite constants outside the macro for cleaner syntax:
+
+```rust
+impl Flags {
+    pub const AB: Self = Self::A.union(Self::B);  // ✅ Cleaner approach
+}
+```
+
 ## API Overview
 
 ### Construction
@@ -160,17 +184,86 @@ neobit preserves all bit information, which is essential for hardware registers 
 
 ## Signed Types
 
-Signed integers are supported for C FFI compatibility:
+Signed integers are supported for C FFI compatibility, but be careful with `!` (complement):
 
 ```rust
 neobit! {
-    pub struct SignedFlags: i32 {
+    pub struct SignedFlags: i8 {
         const A = 0b0001;
     }
 }
+
+let complement = !SignedFlags::A;
+// i8: !0b0001 = -2 (two's complement)
+// u8: !0b0001 = 254
+
+// Prefer difference() for removing flags:
+let all = SignedFlags::all();
+let without_a = all.difference(SignedFlags::A);
 ```
 
-Note: `complement()` follows Rust's two's complement semantics.
+## C FFI Example
+
+```rust
+use neobit::neobit;
+use std::ffi::c_uint;
+
+// Define flags matching a C header
+neobit! {
+    #[repr(transparent)]
+    pub struct RegisterFlags: c_uint {
+        const READY   = 0x01;
+        const ERROR   = 0x02;
+        const BUSY    = 0x04;
+        const DATA_RDY = 0x08;
+    }
+}
+
+// Safe Rust wrapper around C functions
+fn read_status() -> RegisterFlags {
+    let raw = unsafe { read_register() };
+    RegisterFlags::from_bits_retain(raw)  // Preserves all bits!
+}
+
+fn set_ready_flag() {
+    let current = read_status();
+    let updated = current | RegisterFlags::READY;
+    unsafe { write_register(updated.bits()) };
+}
+
+// See examples/c_ffi_simple.rs for a complete runnable example
+```
+
+## Debug Output
+
+Single-bit flags are shown by name. Composite constants are expanded:
+
+```rust
+println!("{:?}", Flags::READ);                    // Flags(READ)
+println!("{:?}", Flags::READ | Flags::WRITE);     // Flags(READ | WRITE)
+println!("{:?}", Flags::all());                    // Flags(READ | WRITE | EXECUTE)
+println!("{:?}", Flags::empty());                  // Flags(empty)
+println!("{:?}", Flags::from_bits_retain(0x80));   // Flags(0x80)
+```
+
+## Examples
+
+Check out the `examples/` directory for comprehensive demonstrations:
+
+- `quick_start.rs` - Basic usage with file permissions
+- `all_method.rs` - Using the built-in `all()` method
+- `bit_validation.rs` - Safe vs unchecked bit operations
+- `complement_difference.rs` - How neobit differs from bitflags
+- `operators_and_methods.rs` - All available operations
+- `type_conversion.rs` - Converting between integers and flags
+- `c_ffi_simple.rs` - C FFI and hardware register example
+- `limitations.rs` - Macro limitations and workarounds
+
+Run them with:
+
+```bash
+cargo run --example <example_name>
+```
 
 ## Minimum Rust Version
 
