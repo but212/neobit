@@ -180,6 +180,32 @@ let validated = Flags::from_bits(0b11);
 let bits = flags.bits();
 ```
 
+## Complement Operation Difference
+
+neobit and bitflags implement `complement()` (or `!` operator) differently:
+
+```rust
+neobit! {
+    pub struct Flags: u8 {
+        const A = 0b01;
+        const B = 0b10;
+    }
+}
+
+let flags = Flags::A;  // 0b01
+
+// neobit: Pure bitwise complement
+let neobit_comp = flags.complement();  // !0b01 = 0b11111110
+
+// bitflags: Complement of defined flags only
+// let bitflags_comp = !flags;  // !0b01 & 0b11 = 0b10
+```
+
+**Why this matters:**
+
+- **neobit** preserves all bit information - essential for hardware registers and protocols
+- **bitflags** masks to defined flags - safer for application-level code
+
 ## Signed Types Warning
 
 Signed integers are supported for C FFI compatibility, but be careful with `!` (complement):

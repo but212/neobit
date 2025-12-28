@@ -234,6 +234,19 @@ macro_rules! neobit {
             ///
             /// This is the `const fn` equivalent of the `!` operator.
             ///
+            /// # Semantic Difference from bitflags
+            ///
+            /// **neobit**: Returns the pure bitwise complement (all bits inverted).
+            /// **bitflags**: Returns the complement of defined flags only (masked with ALL).
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 0b01; const B = 0b10; } }
+            /// let flags = Flags::A;  // 0b01
+            /// let complement = flags.complement();  // neobit: !0b01 = 0b11111110
+            /// // bitflags would return: !0b01 & 0b11 = 0b10 (only defined flags)
+            /// ```
+            ///
             /// # Warning
             ///
             /// For signed integer types, this follows Rust's two's complement
