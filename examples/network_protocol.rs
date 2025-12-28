@@ -40,11 +40,11 @@ struct TcpPacket {
 
 impl TcpPacket {
     fn is_syn_ack(&self) -> bool {
-        self.flags == (TcpFlags::SYN | TcpFlags::ACK)
+        self.flags.contains(TcpFlags::SYN | TcpFlags::ACK)
     }
 
     fn is_connection_close(&self) -> bool {
-        self.flags.contains(TcpFlags::FIN) || self.flags.contains(TcpFlags::RST)
+        self.flags.intersects(TcpFlags::FIN | TcpFlags::RST)
     }
 }
 
