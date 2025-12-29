@@ -625,6 +625,8 @@ fn test_signed_flags128_from_into() {
 
 #[test]
 fn test_signed_flags128_debug() {
+    // SignedFlags128::NEG is -1i128 (all bits set), so ORing with A still has all bits set.
+    // This means the result contains both A and B flags, plus all remaining bits as unknown.
     let flags = SignedFlags128::A | SignedFlags128::NEG;
     assert_eq!(
         format!("{:?}", flags),
