@@ -293,6 +293,15 @@ macro_rules! neobit {
             }
 
             /// Returns `true` if no flags are set.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; } }
+            /// assert!(Flags::empty().is_empty());
+            /// assert!(!Flags::A.is_empty());
+            /// ```
             #[inline(always)]
             pub const fn is_empty(self) -> bool {
                 self.bits == 0
@@ -348,18 +357,50 @@ macro_rules! neobit {
             }
 
             /// Inserts the flags in `other` into `self`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let mut flags = Flags::A;
+            /// flags.insert(Flags::B);
+            /// assert_eq!(flags, Flags::A | Flags::B);
+            /// ```
             #[inline(always)]
             pub fn insert(&mut self, other: Self) {
                 self.bits |= other.bits;
             }
 
             /// Removes the flags in `other` from `self`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let mut flags = Flags::A | Flags::B;
+            /// flags.remove(Flags::A);
+            /// assert_eq!(flags, Flags::B);
+            /// ```
             #[inline(always)]
             pub fn remove(&mut self, other: Self) {
                 self.bits &= !other.bits;
             }
 
             /// Toggles the flags in `other` in `self`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let mut flags = Flags::A;
+            /// flags.toggle(Flags::B);
+            /// assert_eq!(flags, Flags::A | Flags::B);
+            /// flags.toggle(Flags::A);
+            /// assert_eq!(flags, Flags::B);
+            /// ```
             #[inline(always)]
             pub fn toggle(&mut self, other: Self) {
                 self.bits ^= other.bits;
