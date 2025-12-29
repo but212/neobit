@@ -2,19 +2,19 @@
 
 ## [1.0.2] - 2025-12-29
 
-### Changed
+### Changed - 1.0.2
 
 - Fixed markdown table formatting in operators section
 
 ## [1.0.1] - 2025-12-29
 
-### Changed
+### Changed - 1.0.1
 
 - Rewrote README
 
 ## [1.0.0] - 2025-12-29
 
-### Added
+### Added - 1.0.0
 
 - Implemented `Ord` and `PartialOrd` for generated struct.
 - Implemented `LowerHex`, `UpperHex`, `Octal` formatting traits.

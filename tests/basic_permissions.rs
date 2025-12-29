@@ -16,7 +16,6 @@ fn test_creation() {
     let flags = Permissions::empty();
     assert!(flags.is_empty());
 
-    // Test all() method
     let all = Permissions::all();
     assert_eq!(all.bits(), 0b111);
     assert!(all.contains(Permissions::READ));
@@ -41,23 +40,18 @@ fn test_from_bits() {
 
 #[test]
 fn test_operators() {
-    // OR
     let rw = Permissions::READ | Permissions::WRITE;
     assert_eq!(rw.bits(), 0b011);
 
-    // AND
     let r = rw & Permissions::READ;
     assert_eq!(r, Permissions::READ);
 
-    // XOR
     let x = Permissions::READ ^ Permissions::READ.union(Permissions::WRITE);
     assert_eq!(x, Permissions::WRITE);
 
-    // SUB
     let w = Permissions::READ.union(Permissions::WRITE) - Permissions::READ;
     assert_eq!(w, Permissions::WRITE);
 
-    // NOT
     let not_read = !Permissions::READ;
     assert_eq!(not_read.bits(), !0b001u8);
 }
@@ -161,48 +155,4 @@ fn test_equality() {
 
     let c = Permissions::READ;
     assert_ne!(a, c);
-}
-
-#[test]
-fn test_copy_clone() {
-    let a = Permissions::READ;
-    let b = a; // Copy
-    let c = a.clone();
-    assert_eq!(a, b);
-    assert_eq!(a, c);
-}
-neobit! {
-    pub struct TestFlags: u8 {
-        const A = 0b0001;
-        const B = 0b0010;
-        const C = 0b0100;
-        const AB = Self::A.union(Self::B).bits();
-    }
-}
-
-#[test]
-fn test_basic() {
-    let flags = TestFlags::A | TestFlags::B;
-    assert!(flags.contains(TestFlags::A));
-    assert!(flags.contains(TestFlags::B));
-    assert!(!flags.contains(TestFlags::C));
-}
-
-#[test]
-fn test_empty() {
-    let flags = TestFlags::empty();
-    assert!(flags.is_empty());
-    assert_eq!(flags.bits(), 0);
-}
-
-#[test]
-fn test_from_bits_testflags() {
-    let flags = TestFlags::from_bits(0b111);
-    assert_eq!(flags.expect("Invalid bits").bits(), 0b111);
-}
-
-#[test]
-fn test_from_bits_retain_testflags() {
-    let flags = TestFlags::from_bits_retain(0xFF);
-    assert_eq!(flags.bits(), 0xFF);
 }

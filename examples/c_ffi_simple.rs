@@ -2,6 +2,8 @@
 //!
 //! Demonstrates using neobit for C interoperability with hardware registers.
 
+#![allow(unused_unsafe)] // We use unsafe to demonstrate real FFI patterns
+
 use neobit::neobit;
 
 // Define flags matching a C header
@@ -35,10 +37,10 @@ pub extern "C" fn write_register(value: u32) {
 // Safe Rust wrapper
 #[allow(dead_code)]
 fn read_status() -> RegisterFlags {
-    // In real C FFI, this would be unsafe
+    // In real C FFI, calling external functions is unsafe
     // We use unsafe here to demonstrate the proper pattern
-    let raw = read_register();
-    RegisterFlags::from_bits_retain(raw)
+    let raw = unsafe { read_register() };
+    RegisterFlags::from_bits_retain(raw) // Preserves ALL bits including unknown ones
 }
 
 #[allow(dead_code)]
@@ -47,7 +49,7 @@ fn set_ready_flag() {
     let updated = current | RegisterFlags::READY;
     // In real C FFI, this would be unsafe
     // We use unsafe here to demonstrate the proper pattern
-    write_register(updated.bits());
+    unsafe { write_register(updated.bits()) };
 }
 
 #[allow(dead_code)]
@@ -56,7 +58,7 @@ fn clear_error_flag() {
     let updated = current & !RegisterFlags::ERROR;
     // In real C FFI, this would be unsafe
     // We use unsafe here to demonstrate the proper pattern
-    write_register(updated.bits());
+    unsafe { write_register(updated.bits()) };
 }
 
 fn main() {
@@ -101,7 +103,20 @@ fn main() {
     let flags = RegisterFlags::from_bits_retain(raw_with_unknown);
     println!("Raw: {:#010x}", raw_with_unknown);
     println!("Parsed: {:?}", flags);
-    println!("Preserved unknown bits: {:#010x}", flags.bits() & 0x1230);
+
+    // Unknown bits (0x1230) are preserved but not shown by name
+    // This is crucial for hardware registers where future bits might be defined
+    // or where bits have hardware-specific meanings not in our flags
+    let unknown_bits = flags.bits() & 0x1230;
+    println!("Unknown bits preserved: {:#010x}", unknown_bits);
+    println!("Unknown bits as decimal: {}", unknown_bits);
+
+    // In a real hardware register, these unknown bits might mean:
+    // - Bit 12: FIFO half-full
+    // - Bit 13: FIFO full
+    // - Bit 16: Temperature warning
+    // - Bit 17: Over-temperature shutdown
+    // By preserving them, we don't lose hardware state information!
 
     println!("\nAll examples passed!");
 }

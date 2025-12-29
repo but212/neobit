@@ -235,14 +235,33 @@ println!("{:?}", Flags::from_bits_retain(0x80));   // Flags(0x80)
 
 Check out the `examples/` directory for comprehensive demonstrations:
 
+### Getting Started
+
 - `quick_start.rs` - Basic usage with file permissions
+- `permissions.rs` - File permission flags example
 - `all_method.rs` - Using the built-in `all()` method
+
+### Core Features
+
 - `bit_validation.rs` - Safe vs unchecked bit operations
-- `complement_difference.rs` - How neobit differs from bitflags
+- `validation.rs` - Input validation patterns
 - `operators_and_methods.rs` - All available operations
 - `type_conversion.rs` - Converting between integers and flags
-- `c_ffi_simple.rs` - C FFI and hardware register example
+- `const_operations.rs` - Using flags in const contexts
+- `integer_types.rs` - All supported integer types (u8-u128, i8-i128)
+
+### Advanced Usage
+
+- `composite_flags.rs` - Defining composite flag constants
+- `complement_difference.rs` - How neobit differs from bitflags
 - `limitations.rs` - Macro limitations and workarounds
+
+### Real-World Scenarios
+
+- `c_ffi.rs` - Complete C FFI integration example
+- `c_ffi_simple.rs` - Simple C FFI and hardware register example
+- `hardware_register.rs` - Hardware register manipulation
+- `network_protocol.rs` - Network protocol flags
 
 Run them with:
 
