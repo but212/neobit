@@ -581,8 +581,6 @@ mod kani_proofs {
     //! These proof harnesses verify that all bitwise operations are panic-free
     //! and mathematically correct across all possible input combinations.
 
-    use super::*;
-
     // Test flags for verification
     neobit! {
         /// Flags used for Kani verification proofs
