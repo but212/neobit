@@ -1028,32 +1028,32 @@ mod kani_proofs {
     ///
     /// Property (Identity):
     /// - empty() is the identity for union (left and right)
-    /// - all() is the identity for intersection (left and right)
+    /// - all() is the identity for intersection (left and right, for valid flags)
     ///
-    /// This proves that (Flags, |, empty) and (Flags, &, all) form monoids.
+    /// This proves that (Flags, |, empty) and (Flags, &, all) form monoids
+    /// when restricted to the valid flag space.
     #[kani::proof]
     fn proof_identity_elements() {
         let a: u8 = kani::any();
-        let flags = TestFlags::from_bits_retain(a);
-
         let empty = TestFlags::empty();
         let all = TestFlags::all();
 
-        // empty() is the identity for union
-        assert_eq!((flags | empty).bits(), flags.bits()); // Right identity
-        assert_eq!((empty | flags).bits(), flags.bits()); // Left identity
+        // Use from_bits_truncate to get only valid flags
+        let flags = TestFlags::from_bits_truncate(a);
 
-        // all() is the identity for intersection
+        // empty() is the identity for union (works for all bit patterns)
+        let flags_any = TestFlags::from_bits_retain(a);
+        assert_eq!((flags_any | empty).bits(), flags_any.bits()); // Right identity
+        assert_eq!((empty | flags_any).bits(), flags_any.bits()); // Left identity
+
+        // all() is the identity for intersection (for valid flags)
         assert_eq!((flags & all).bits(), flags.bits()); // Right identity
         assert_eq!((all & flags).bits(), flags.bits()); // Left identity
 
         // Zero elements
         // empty() is the zero for intersection
-        assert_eq!((flags & empty).bits(), empty.bits());
-        assert_eq!((empty & flags).bits(), empty.bits());
-
-        // all() is the zero for union (when all bits are defined)
-        // Note: This only holds if we consider all() as the universal set
+        assert_eq!((flags_any & empty).bits(), empty.bits());
+        assert_eq!((empty & flags_any).bits(), empty.bits());
     }
 
     /// Verify idempotence of union and intersection.
@@ -1187,7 +1187,5 @@ mod kani_proofs {
 
         // Inverse (self-inverse): a ^ a == empty
         assert_eq!((flags ^ flags).bits(), empty.bits());
-
-        // This proves (Flags, ^, empty) is an Abelian group
     }
 }
