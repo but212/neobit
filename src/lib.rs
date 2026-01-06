@@ -863,4 +863,331 @@ mod kani_proofs {
         let rhs2 = flags_a.complement().union(flags_b.complement());
         assert_eq!(lhs2.bits(), rhs2.bits());
     }
+
+    /// Verify that insert operation never panics and produces correct results.
+    ///
+    /// Property: After insert(other), self contains all bits from other.
+    #[kani::proof]
+    fn proof_insert_correctness() {
+        let initial: u8 = kani::any();
+        let to_insert: u8 = kani::any();
+
+        let mut flags = TestFlags::from_bits_retain(initial);
+        let insert_flags = TestFlags::from_bits_retain(to_insert);
+
+        flags.insert(insert_flags);
+
+        // After insert, result should be the union
+        assert_eq!(flags.bits(), initial | to_insert);
+
+        // All bits from to_insert should be present
+        assert!((flags.bits() & to_insert) == to_insert);
+    }
+
+    /// Verify that remove operation never panics and produces correct results.
+    ///
+    /// Property: After remove(other), self contains no bits from other.
+    #[kani::proof]
+    fn proof_remove_correctness() {
+        let initial: u8 = kani::any();
+        let to_remove: u8 = kani::any();
+
+        let mut flags = TestFlags::from_bits_retain(initial);
+        let remove_flags = TestFlags::from_bits_retain(to_remove);
+
+        flags.remove(remove_flags);
+
+        // After remove, result should be the difference
+        assert_eq!(flags.bits(), initial & !to_remove);
+
+        // No bits from to_remove should be present
+        assert!((flags.bits() & to_remove) == 0);
+    }
+
+    /// Verify that toggle operation never panics and produces correct results.
+    ///
+    /// Property: toggle(other) flips all bits in other.
+    /// Property: Toggling twice restores the original value.
+    #[kani::proof]
+    fn proof_toggle_correctness() {
+        let initial: u8 = kani::any();
+        let to_toggle: u8 = kani::any();
+
+        let mut flags = TestFlags::from_bits_retain(initial);
+        let toggle_flags = TestFlags::from_bits_retain(to_toggle);
+
+        // First toggle
+        flags.toggle(toggle_flags);
+        assert_eq!(flags.bits(), initial ^ to_toggle);
+
+        // Second toggle should restore original
+        flags.toggle(toggle_flags);
+        assert_eq!(flags.bits(), initial);
+    }
+
+    /// Verify that bitwise operator overloads match their method equivalents.
+    ///
+    /// Property: Operators should behave identically to their method counterparts.
+    #[kani::proof]
+    fn proof_operator_overloads() {
+        let a: u8 = kani::any();
+        let b: u8 = kani::any();
+
+        let flags_a = TestFlags::from_bits_retain(a);
+        let flags_b = TestFlags::from_bits_retain(b);
+
+        // BitOr (|) should match union
+        assert_eq!((flags_a | flags_b).bits(), flags_a.union(flags_b).bits());
+
+        // BitAnd (&) should match intersection
+        assert_eq!(
+            (flags_a & flags_b).bits(),
+            flags_a.intersection(flags_b).bits()
+        );
+
+        // BitXor (^) should match symmetric_difference
+        assert_eq!(
+            (flags_a ^ flags_b).bits(),
+            flags_a.symmetric_difference(flags_b).bits()
+        );
+
+        // Sub (-) should match difference
+        assert_eq!(
+            (flags_a - flags_b).bits(),
+            flags_a.difference(flags_b).bits()
+        );
+
+        // Not (!) should match complement
+        assert_eq!((!flags_a).bits(), flags_a.complement().bits());
+    }
+
+    /// Verify that assignment operators work correctly.
+    ///
+    /// Property: Assignment operators should modify in place correctly.
+    #[kani::proof]
+    fn proof_assignment_operators() {
+        let initial: u8 = kani::any();
+        let other: u8 = kani::any();
+
+        let initial_flags = TestFlags::from_bits_retain(initial);
+        let other_flags = TestFlags::from_bits_retain(other);
+
+        // BitOrAssign (|=)
+        let mut flags = initial_flags;
+        flags |= other_flags;
+        assert_eq!(flags.bits(), initial | other);
+
+        // BitAndAssign (&=)
+        let mut flags = initial_flags;
+        flags &= other_flags;
+        assert_eq!(flags.bits(), initial & other);
+
+        // BitXorAssign (^=)
+        let mut flags = initial_flags;
+        flags ^= other_flags;
+        assert_eq!(flags.bits(), initial ^ other);
+
+        // SubAssign (-=)
+        let mut flags = initial_flags;
+        flags -= other_flags;
+        assert_eq!(flags.bits(), initial & !other);
+    }
+
+    /// Verify associativity of union, intersection, and symmetric difference.
+    ///
+    /// Property (Associativity): (a ⊕ b) ⊕ c == a ⊕ (b ⊕ c)
+    ///
+    /// This proves that these operations form semigroups.
+    #[kani::proof]
+    fn proof_associativity() {
+        let a: u8 = kani::any();
+        let b: u8 = kani::any();
+        let c: u8 = kani::any();
+
+        let flags_a = TestFlags::from_bits_retain(a);
+        let flags_b = TestFlags::from_bits_retain(b);
+        let flags_c = TestFlags::from_bits_retain(c);
+
+        // Union is associative: (a | b) | c == a | (b | c)
+        let union_lhs = (flags_a | flags_b) | flags_c;
+        let union_rhs = flags_a | (flags_b | flags_c);
+        assert_eq!(union_lhs.bits(), union_rhs.bits());
+
+        // Intersection is associative: (a & b) & c == a & (b & c)
+        let intersection_lhs = (flags_a & flags_b) & flags_c;
+        let intersection_rhs = flags_a & (flags_b & flags_c);
+        assert_eq!(intersection_lhs.bits(), intersection_rhs.bits());
+
+        // Symmetric difference is associative: (a ^ b) ^ c == a ^ (b ^ c)
+        let xor_lhs = (flags_a ^ flags_b) ^ flags_c;
+        let xor_rhs = flags_a ^ (flags_b ^ flags_c);
+        assert_eq!(xor_lhs.bits(), xor_rhs.bits());
+    }
+
+    /// Verify identity elements for union and intersection.
+    ///
+    /// Property (Identity):
+    /// - empty() is the identity for union (left and right)
+    /// - all() is the identity for intersection (left and right)
+    ///
+    /// This proves that (Flags, |, empty) and (Flags, &, all) form monoids.
+    #[kani::proof]
+    fn proof_identity_elements() {
+        let a: u8 = kani::any();
+        let flags = TestFlags::from_bits_retain(a);
+
+        let empty = TestFlags::empty();
+        let all = TestFlags::all();
+
+        // empty() is the identity for union
+        assert_eq!((flags | empty).bits(), flags.bits()); // Right identity
+        assert_eq!((empty | flags).bits(), flags.bits()); // Left identity
+
+        // all() is the identity for intersection
+        assert_eq!((flags & all).bits(), flags.bits()); // Right identity
+        assert_eq!((all & flags).bits(), flags.bits()); // Left identity
+
+        // Zero elements
+        // empty() is the zero for intersection
+        assert_eq!((flags & empty).bits(), empty.bits());
+        assert_eq!((empty & flags).bits(), empty.bits());
+
+        // all() is the zero for union (when all bits are defined)
+        // Note: This only holds if we consider all() as the universal set
+    }
+
+    /// Verify idempotence of union and intersection.
+    ///
+    /// Property (Idempotence): a ⊕ a == a
+    ///
+    /// This is a key property of lattices.
+    #[kani::proof]
+    fn proof_idempotence() {
+        let a: u8 = kani::any();
+        let flags = TestFlags::from_bits_retain(a);
+
+        // Union is idempotent: a | a == a
+        assert_eq!((flags | flags).bits(), flags.bits());
+
+        // Intersection is idempotent: a & a == a
+        assert_eq!((flags & flags).bits(), flags.bits());
+    }
+
+    /// Verify absorption laws.
+    ///
+    /// Property (Absorption):
+    /// - a | (a & b) == a
+    /// - a & (a | b) == a
+    ///
+    /// This proves that (Flags, |, &) forms a lattice.
+    #[kani::proof]
+    fn proof_absorption_laws() {
+        let a: u8 = kani::any();
+        let b: u8 = kani::any();
+
+        let flags_a = TestFlags::from_bits_retain(a);
+        let flags_b = TestFlags::from_bits_retain(b);
+
+        // First absorption law: a | (a & b) == a
+        let absorption1 = flags_a | (flags_a & flags_b);
+        assert_eq!(absorption1.bits(), flags_a.bits());
+
+        // Second absorption law: a & (a | b) == a
+        let absorption2 = flags_a & (flags_a | flags_b);
+        assert_eq!(absorption2.bits(), flags_a.bits());
+    }
+
+    /// Verify distributive laws.
+    ///
+    /// Property (Distributivity):
+    /// - a | (b & c) == (a | b) & (a | c)
+    /// - a & (b | c) == (a & b) | (a & c)
+    ///
+    /// This proves that (Flags, |, &) forms a distributive lattice.
+    #[kani::proof]
+    fn proof_distributive_laws() {
+        let a: u8 = kani::any();
+        let b: u8 = kani::any();
+        let c: u8 = kani::any();
+
+        let flags_a = TestFlags::from_bits_retain(a);
+        let flags_b = TestFlags::from_bits_retain(b);
+        let flags_c = TestFlags::from_bits_retain(c);
+
+        // Union distributes over intersection: a | (b & c) == (a | b) & (a | c)
+        let lhs1 = flags_a | (flags_b & flags_c);
+        let rhs1 = (flags_a | flags_b) & (flags_a | flags_c);
+        assert_eq!(lhs1.bits(), rhs1.bits());
+
+        // Intersection distributes over union: a & (b | c) == (a & b) | (a & c)
+        let lhs2 = flags_a & (flags_b | flags_c);
+        let rhs2 = (flags_a & flags_b) | (flags_a & flags_c);
+        assert_eq!(lhs2.bits(), rhs2.bits());
+    }
+
+    /// Verify complement laws (Boolean algebra).
+    ///
+    /// Property (Complement):
+    /// - a | !a == all (for defined bits)
+    /// - a & !a == empty
+    ///
+    /// Combined with distributive lattice properties, this proves that
+    /// (Flags, |, &, !) forms a Boolean algebra.
+    #[kani::proof]
+    fn proof_complement_laws() {
+        let a: u8 = kani::any();
+        let flags = TestFlags::from_bits_retain(a);
+
+        let complement = !flags;
+        let empty = TestFlags::empty();
+
+        // a & !a == empty (Law of noncontradiction)
+        assert_eq!((flags & complement).bits(), empty.bits());
+
+        // a | !a == all bits set (Law of excluded middle)
+        // Note: This gives us 0xFF for u8, which includes undefined bits
+        assert_eq!((flags | complement).bits(), 0xFF);
+
+        // Double negation: !!a == a
+        assert_eq!((!(!flags)).bits(), flags.bits());
+    }
+
+    /// Verify involution property of complement.
+    ///
+    /// Property (Involution): !(!a) == a
+    ///
+    /// This proves that complement is its own inverse.
+    #[kani::proof]
+    fn proof_involution() {
+        let a: u8 = kani::any();
+        let flags = TestFlags::from_bits_retain(a);
+
+        // Double complement returns original
+        let double_complement = !(!flags);
+        assert_eq!(double_complement.bits(), flags.bits());
+    }
+
+    /// Verify that symmetric difference forms an Abelian group with empty().
+    ///
+    /// Properties:
+    /// - Associativity: (a ^ b) ^ c == a ^ (b ^ c) [already proven]
+    /// - Identity: a ^ empty == a
+    /// - Inverse: a ^ a == empty (self-inverse)
+    /// - Commutativity: a ^ b == b ^ a [already proven]
+    #[kani::proof]
+    fn proof_xor_abelian_group() {
+        let a: u8 = kani::any();
+        let flags = TestFlags::from_bits_retain(a);
+
+        let empty = TestFlags::empty();
+
+        // Identity: a ^ empty == a
+        assert_eq!((flags ^ empty).bits(), flags.bits());
+        assert_eq!((empty ^ flags).bits(), flags.bits());
+
+        // Inverse (self-inverse): a ^ a == empty
+        assert_eq!((flags ^ flags).bits(), empty.bits());
+
+        // This proves (Flags, ^, empty) is an Abelian group
+    }
 }
