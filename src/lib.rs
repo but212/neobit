@@ -129,9 +129,9 @@ macro_rules! neobit {
                 let all = Self::all().bits;
 
                 if (bits & !all) == 0 {
-                    core::option::Option::Some(Self { bits })
+                    ::core::option::Option::Some(Self { bits })
                 } else {
-                    core::option::Option::None
+                    ::core::option::Option::None
                 }
             }
 

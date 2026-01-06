@@ -5,7 +5,7 @@
 ### Fixed
 
 - Updated `rustfmt.toml` to replace deprecated `fn_args_layout` with `fn_params_layout`.
-- Hardened `neobit!` macro to use fully qualified `core::option::Option` paths, preventing shadowing issues.
+- Hardened `neobit!` macro to use fully qualified `::core::option::Option` paths, preventing shadowing issues.
 
 ## [1.0.2] - 2025-12-29
 
