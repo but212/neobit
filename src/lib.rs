@@ -125,13 +125,13 @@ macro_rules! neobit {
             /// assert!(Flags::from_bits(0b100).is_none());
             /// ```
             #[inline(always)]
-            pub const fn from_bits(bits: $int_ty) -> Option<Self> {
+            pub const fn from_bits(bits: $int_ty) -> ::core::option::Option<Self> {
                 let all = Self::all().bits;
 
                 if (bits & !all) == 0 {
-                    Some(Self { bits })
+                    ::core::option::Option::Some(Self { bits })
                 } else {
-                    None
+                    ::core::option::Option::None
                 }
             }
 
