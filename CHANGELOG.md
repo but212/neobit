@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **Documentation**: Emphasized `From<T>` trait usage over `from_bits_retain()` method
+  - Updated Quick Start examples in `lib.rs` and `README.md` to showcase `.into()` syntax
+  - Revised "Type Conversion" section in README to highlight trait-based API
+  - Updated C FFI example to use `.into()` for cleaner code
+  - Modified tests to prefer `From` trait over explicit method calls
+- Added note explaining that neobit implements `From<T>` (unlike bitflags which only provides `TryFrom`)
+
 ## [1.0.3] - 2026-01-06
 
 ### Fixed - 1.0.3

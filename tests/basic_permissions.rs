@@ -24,9 +24,14 @@ fn test_creation() {
 }
 
 #[test]
-fn test_from_bits_retain() {
-    let flags = Permissions::from_bits_retain(0xFF);
+fn test_from_trait() {
+    // From<u8> trait uses from_bits_retain internally
+    let flags: Permissions = 0xFF.into();
     assert_eq!(flags.bits(), 0xFF);
+
+    // Explicit From::from call
+    let flags2 = Permissions::from(0xFF);
+    assert_eq!(flags2.bits(), 0xFF);
 }
 
 #[test]
