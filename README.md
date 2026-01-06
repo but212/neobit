@@ -93,8 +93,8 @@ impl Flags {
 
 ```rust
 // Using From trait (recommended for hardware/FFI)
-let flags: Flags = 0x1234.into();  // Preserves all bits
-let flags = Flags::from(0x1234);   // Same as above
+let flags_into: Flags = 0x1234.into();  // Preserves all bits
+let flags_from = Flags::from(0x1234);   // Same as above
 
 // Other construction methods
 Flags::empty()                     // No flags set
@@ -148,13 +148,11 @@ neobit implements `From<T>` trait for seamless conversion (unlike bitflags which
 
 ```rust
 // From integer to flags (preserves all bits)
-let flags: Flags = 0xFF.into();     // Recommended
-let flags = Flags::from(0xFF);      // Explicit
-
+let flags: Flags = 0xFF.into();     // Recommended, equivalent to `Flags::from(0xFF)`
 // From flags to integer
-let bits: u8 = flags.into();
-let bits = u8::from(flags);
-let bits = flags.bits();            // Also works
+let bits1: u8 = flags.into();
+let bits2 = u8::from(flags);
+let bits3 = flags.bits();            // Also works
 ```
 
 > **Note**: `From` trait uses `from_bits_retain` internally, preserving all bits including unknown ones. This is intentional for hardware/FFI use cases.

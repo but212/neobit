@@ -46,8 +46,8 @@
 //! # use neobit::neobit;
 //! # neobit! { pub struct Flags: u32 { const A = 1; } }
 //! // Hardware-friendly: just use .into() or From::from()
-//! let flags: Flags = 0x1234_ABCD.into();  // All bits preserved
-//! let flags = Flags::from(0x1234_ABCD);   // Same as above
+//! let flags_into: Flags = 0x1234_ABCD.into();  // All bits preserved
+//! let flags_from = Flags::from(0x1234_ABCD);   // Same as above
 //! ```
 //!
 //! This preserves all bit information when needed, which is essential for:
