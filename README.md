@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/neobit)](https://crates.io/crates/neobit)
 [![Docs](https://docs.rs/neobit/badge.svg)](https://docs.rs/neobit)
-[![Kani](https://github.com/but212/neobit/actions/workflows/verification.yml/badge.svg)](https://github.com/but212/neobit/actions/workflows/verification.yml)
+[![Verification](https://github.com/but212/neobit/actions/workflows/verification.yml/badge.svg)](https://github.com/but212/neobit/actions/workflows/verification.yml)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/but212/neobit)
 
 A zero-dependency, bitflags macro for systems programming. Designed for `no_std` environments.
