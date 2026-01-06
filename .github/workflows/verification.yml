@@ -18,3 +18,14 @@ jobs:
         uses: model-checking/kani-github-action@v1.1
         with:
           args: --tests
+
+  miri:
+    name: Miri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri
+      - name: Run Miri
+        run: cargo miri test
