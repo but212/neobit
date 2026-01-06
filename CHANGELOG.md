@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Formal Verification**: Added Kani proof harnesses for mathematical verification
+  - 13 proof harnesses covering all bitwise operations (`union`, `intersection`, `difference`, `complement`, `symmetric_difference`)
+  - Property verification: `from_bits` soundness, `contains` correctness, roundtrip conversion
+  - Algebraic property proofs: commutativity, De Morgan's laws
+  - New GitHub Actions workflow (`verification.yml`) running on `main` branch pushes
+
 ## [1.0.4]
 
 ### Changed

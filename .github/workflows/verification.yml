@@ -1,0 +1,21 @@
+name: Verification
+
+on:
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  kani:
+    name: Kani Formal Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify with Kani
+        uses: model-checking/kani-github-action@v1.1
+        with:
+          # Run all Kani proofs in the neobit crate
+          args: --tests -p neobit
