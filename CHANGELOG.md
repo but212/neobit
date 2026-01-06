@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.3] - 2026-01-06
 
-### Fixed
+### Fixed - 1.0.3
 
 - Updated `rustfmt.toml` to replace deprecated `fn_args_layout` with `fn_params_layout`.
 - Hardened `neobit!` macro to use fully qualified `::core::option::Option` paths, preventing shadowing issues.
