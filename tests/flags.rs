@@ -162,10 +162,10 @@ fn test_flags8_debug() {
     let flags = Flags8::empty();
     assert_eq!(format!("{:?}", flags), "Flags8(empty)");
 
-    let flags = Flags8::from_bits_retain(0b1000_0001);
+    let flags: Flags8 = 0b1000_0001.into();
     assert_eq!(format!("{:?}", flags), "Flags8(A | 0x80)");
 
-    let flags = Flags8::from_bits_retain(0b1000_0000);
+    let flags: Flags8 = 0b1000_0000.into();
     assert_eq!(format!("{:?}", flags), "Flags8(0x80)");
 }
 
@@ -191,7 +191,7 @@ fn test_flags8_from_into() {
 #[test]
 fn test_flags8_unknown_bits() {
     let all = Flags8::all();
-    let with_unknown = all.union(Flags8::from_bits_retain(0b1000_0000));
+    let with_unknown = all.union(Flags8::from(0b1000_0000));
 
     assert!(with_unknown.contains(Flags8::A));
     assert!(with_unknown.contains(Flags8::B));

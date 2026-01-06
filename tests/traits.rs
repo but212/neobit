@@ -60,15 +60,15 @@ fn test_eq_trait() {
 
 #[test]
 fn test_partial_eq_trait() {
-    let a = Permissions::from_bits_retain(0b111);
-    let b = Permissions::from_bits_retain(0b111);
-    let c = Permissions::from_bits_retain(0b110);
+    let a: Permissions = 0b111.into();
+    let b: Permissions = 0b111.into();
+    let c: Permissions = 0b110.into();
 
     assert_eq!(a, b);
     assert_ne!(a, c);
 
     let known = Permissions::READ | Permissions::WRITE;
-    let with_unknown = Permissions::from_bits_retain(0b111);
+    let with_unknown: Permissions = 0b111.into();
     assert_ne!(known, with_unknown);
 }
 
@@ -142,19 +142,19 @@ fn test_hash_trait() {
 fn test_hash_with_unknown_bits() {
     use std::collections::HashSet;
 
-    let a = Permissions::from_bits_retain(0b101);
-    let b = Permissions::from_bits_retain(0b101);
+    let a: Permissions = 0b101.into();
+    let b: Permissions = 0b101.into();
     let c = Permissions::READ | Permissions::EXECUTE;
 
     assert_eq!(calc_hash(&a), calc_hash(&b));
     assert_eq!(calc_hash(&a), calc_hash(&c));
 
     let mut set = HashSet::new();
-    set.insert(Permissions::from_bits_retain(0xFF));
-    set.insert(Permissions::from_bits_retain(0xFF));
+    set.insert(Permissions::from(0xFF));
+    set.insert(Permissions::from(0xFF));
     assert_eq!(set.len(), 1);
 
-    set.insert(Permissions::from_bits_retain(0xFE));
+    set.insert(Permissions::from(0xFE));
     assert_eq!(set.len(), 2);
 }
 
@@ -172,7 +172,7 @@ fn test_all_derived_traits_together() {
     vec.push(Permissions::READ | Permissions::WRITE);
     vec.push(Permissions::EXECUTE);
     vec.push(Permissions::all());
-    vec.push(Permissions::from_bits_retain(0b1010));
+    vec.push(0b1010.into()); // Using From trait
 
     // Test Copy (clone the vec)
     let vec_clone = vec.clone();

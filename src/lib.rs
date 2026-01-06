@@ -20,11 +20,15 @@
 //! assert!(perms.contains(Permissions::READ));
 //! println!("{:?}", perms);  // Permissions(READ | WRITE)
 //!
+//! // From trait - from raw bits
+//! let from_raw: Permissions = 0b111.into();
+//! assert!(from_raw.is_all());
+//!
 //! // Get all flags
 //! let all = Permissions::all();
 //! assert!(all.contains(Permissions::READ | Permissions::WRITE | Permissions::EXECUTE));
 //!
-//! // Validate bits
+//! // Validate bits (returns Option)
 //! let valid = Permissions::from_bits(0b011);
 //! assert!(valid.is_some());
 //! let invalid = Permissions::from_bits(0b1000);
@@ -36,6 +40,15 @@
 //! **Flexible Bit Validation**: neobit provides both validated and unchecked bit operations.
 //! - `from_bits()` validates bits and returns `Option<Self>`
 //! - `from_bits_retain()` preserves all bits without validation
+//! - `From<T>` trait is implemented for seamless conversion (uses `from_bits_retain`)
+//!
+//! ```rust
+//! # use neobit::neobit;
+//! # neobit! { pub struct Flags: u32 { const A = 1; } }
+//! // Hardware-friendly: just use .into() or From::from()
+//! let flags_into: Flags = 0x1234_ABCD.into();  // All bits preserved
+//! let flags_from = Flags::from(0x1234_ABCD);   // Same as above
+//! ```
 //!
 //! This preserves all bit information when needed, which is essential for:
 //! - C FFI bindings
