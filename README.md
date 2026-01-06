@@ -33,10 +33,14 @@ fn main() {
 
     println!("{:?}", perms);  // Permissions(READ | WRITE)
     
+    // From trait - from raw bits
+    let from_raw: Permissions = 0b111.into();
+    assert!(from_raw.is_all());
+    
     // All defined flags
     let all = Permissions::all();
     
-    // Bit validation
+    // Bit validation (returns Option)
     let valid = Permissions::from_bits(0b011);    // Some(...)
     let invalid = Permissions::from_bits(0b1000); // None
 }
@@ -88,11 +92,16 @@ impl Flags {
 ### Construction
 
 ```rust
-Flags::empty()              // No flags set
-Flags::all()                // All defined flags
-Flags::from_bits(bits)      // Validated, returns Option<Self>
-Flags::from_bits_truncate(bits)  // Truncate unknown bits
-Flags::from_bits_retain(bits)    // Keep all bits (for FFI)
+// Using From trait (recommended for hardware/FFI)
+let flags_into: Flags = 0x1234.into();  // Preserves all bits
+let flags_from = Flags::from(0x1234);   // Same as above
+
+// Other construction methods
+Flags::empty()                     // No flags set
+Flags::all()                       // All defined flags
+Flags::from_bits(bits)             // Validated, returns Option<Self>
+Flags::from_bits_truncate(bits)    // Truncate unknown bits
+Flags::from_bits_retain(bits)      // Keep all bits (same as From)
 ```
 
 ### Operations
@@ -117,7 +126,7 @@ flags.set(other, condition) // Set or remove based on bool
 ### Operators
 
 | Operator | Meaning | const fn equivalent |
-|----------|---------|---------------------|
+| ---------- | --------- | --------------------- |
 | `\|` | Union | `union()` |
 | `&` | Intersection | `intersection()` |
 | `^` | Symmetric difference | `symmetric_difference()` |
@@ -135,15 +144,18 @@ const ALL: Flags = Flags::all();
 
 ### Type Conversion
 
-```rust
-// From/Into (uses from_bits_retain)
-let flags: Flags = 0b11.into();
-let bits: u8 = flags.into();
+neobit implements `From<T>` trait for seamless conversion (unlike bitflags which only provides `TryFrom`):
 
-// Explicit
-let flags = Flags::from_bits_retain(0b11);
-let bits = flags.bits();
+```rust
+// From integer to flags (preserves all bits)
+let flags: Flags = 0xFF.into();     // Recommended, equivalent to `Flags::from(0xFF)`
+// From flags to integer
+let bits1: u8 = flags.into();
+let bits2 = u8::from(flags);
+let bits3 = flags.bits();            // Also works
 ```
+
+> **Note**: `From` trait uses `from_bits_retain` internally, preserving all bits including unknown ones. This is intentional for hardware/FFI use cases.
 
 ## Complement Behavior
 
@@ -207,7 +219,7 @@ neobit! {
 // Safe Rust wrapper around C functions
 fn read_status() -> RegisterFlags {
     let raw = read_register();
-    RegisterFlags::from_bits_retain(raw)  // Preserves all bits!
+    raw.into()  // From trait preserves all bits!
 }
 
 fn set_ready_flag() {
@@ -228,7 +240,7 @@ println!("{:?}", Flags::READ);                    // Flags(READ)
 println!("{:?}", Flags::READ | Flags::WRITE);     // Flags(READ | WRITE)
 println!("{:?}", Flags::all());                    // Flags(READ | WRITE | EXECUTE)
 println!("{:?}", Flags::empty());                  // Flags(empty)
-println!("{:?}", Flags::from_bits_retain(0x80));   // Flags(0x80)
+println!("{:?}", Flags::from(0x80));              // Flags(0x80)
 ```
 
 ## Examples
