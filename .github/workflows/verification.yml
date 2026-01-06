@@ -17,5 +17,4 @@ jobs:
       - name: Verify with Kani
         uses: model-checking/kani-github-action@v1.1
         with:
-          # Run all Kani proofs in the neobit crate
-          args: --tests -p neobit
+          args: --tests
