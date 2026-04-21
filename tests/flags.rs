@@ -198,6 +198,27 @@ fn test_flags8_unknown_bits() {
     assert!(with_unknown.contains(Flags8::C));
     assert!(with_unknown.contains(Flags8::D));
     assert_eq!(with_unknown.bits(), 0b1000_1111);
+
+    // New tests for is_all and is_all_known
+    assert!(!with_unknown.is_all());
+    assert!(with_unknown.is_all_known());
+}
+
+#[test]
+fn test_is_all_known_comprehensive() {
+    // Tests across different types
+    assert!(Flags16::all().is_all_known());
+    assert!(Flags32::all().is_all_known());
+    assert!(Flags64::all().is_all_known());
+    assert!(Flags128::all().is_all_known());
+    assert!(SignedFlags8::all().is_all_known());
+
+    // With extra bits
+    assert!(Flags16::from(0xFFFF).is_all_known());
+    assert!(Flags32::from(0xFFFF_FFFF).is_all_known());
+
+    // Not all bits
+    assert!(!Flags8::A.is_all_known());
 }
 
 #[test]

@@ -105,10 +105,6 @@ macro_rules! neobit {
                 pub const $flag_name: Self = Self { bits: $flag_value };
             )*
 
-            /// Internal: flag names and values for Debug output
-            const __FLAGS: &'static [(&'static str, $int_ty)] = &[
-                $((stringify!($flag_name), $flag_value),)*
-            ];
 
             /// Creates an empty flags value (all bits unset).
             ///
@@ -214,7 +210,6 @@ macro_rules! neobit {
             /// flags.set(Flags::A, false);
             /// assert_eq!(flags, Flags::B);
             /// ```
-            #[inline(always)]
             pub fn set(&mut self, other: Self, condition: bool) {
                 let m = (condition as $int_ty).wrapping_neg();
                 self.bits = (self.bits & !other.bits) | (other.bits & m);
@@ -333,6 +328,24 @@ macro_rules! neobit {
             #[inline(always)]
             pub const fn is_all(self) -> bool {
                 self.bits == Self::all().bits
+            }
+
+            /// Returns `true` if all defined flags are set, ignoring any unknown bits.
+            ///
+            /// This is useful when working with raw bits that may contain unknown information.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// # use neobit::neobit;
+            /// # neobit! { pub struct Flags: u8 { const A = 1; const B = 2; } }
+            /// let flags = Flags::from_bits_retain(0b111); // A (1) and B (2) are set, plus unknown (4)
+            /// assert!(flags.is_all_known());
+            /// assert!(!flags.is_all()); // is_all() fails because of the unknown bit
+            /// ```
+            #[inline(always)]
+            pub const fn is_all_known(self) -> bool {
+                (self.bits & Self::all().bits) == Self::all().bits
             }
 
             /// Returns `true` if all flags in `other` are contained in `self`.
@@ -513,11 +526,16 @@ macro_rules! neobit {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 write!(f, "{}(", stringify!($name))?;
 
+                #[allow(non_snake_case)]
+                let __registry: &[(&str, $int_ty)] = &[
+                    $((stringify!($flag_name), $flag_value),)*
+                ];
+
                 let mut bits = self.bits;
                 let mut first = true;
 
                 // Output single-bit flags by name
-                for &(name, value) in Self::__FLAGS {
+                for &(name, value) in __registry {
                     // Check if single bit (power of 2)
                     let is_single_bit: bool = value != 0 && (value & (value.wrapping_sub(1))) == 0;
                     if is_single_bit && (bits & value) == value {
@@ -803,12 +821,16 @@ mod kani_proofs {
         // is_all is true iff bits == all_flags
         assert_eq!(flags.is_all(), bits == all_flags);
 
+        // is_all_known is true iff (bits & all_flags) == all_flags
+        assert_eq!(flags.is_all_known(), (bits & all_flags) == all_flags);
+
         // Cover all cases
         kani::cover!(flags.is_empty(), "is_empty returns true");
         kani::cover!(flags.is_all(), "is_all returns true");
+        kani::cover!(flags.is_all_known(), "is_all_known returns true");
         kani::cover!(
-            !flags.is_empty() && !flags.is_all(),
-            "neither empty nor all"
+            !flags.is_empty() && !flags.is_all() && !flags.is_all_known(),
+            "neither empty nor all nor all_known"
         );
     }
 

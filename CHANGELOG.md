@@ -4,9 +4,15 @@
 
 ### Added
 
+- **API Consistency**: Added `is_all_known()` method
+  - Distinguishes between "exact match" (`is_all()`) and "all defined flags set" (`is_all_known()`)
+  - Ensures reliable flag checking even when raw bits contain unknown information
+- **Macro Hygiene**: Renamed internal `__FLAGS` constant to `__NEOBIT_INTERNAL_FLAGS_REGISTRY`
+  - Prevents name collisions when users define a flag named `__FLAGS`
+  - Improves encapsulation by using a unique internal identifier
 - **Formal Verification**: Added Kani proof harnesses for mathematical verification
   - 19 proof harnesses covering all bitwise operations (`union`, `intersection`, `difference`, `complement`, `symmetric_difference`)
-  - Property verification: `from_bits` soundness, `contains` correctness, roundtrip conversion
+  - Property verification: `from_bits` soundness, `contains` correctness, `is_all_known` correctness, roundtrip conversion
   - Algebraic property proofs: commutativity, De Morgan's laws
   - New GitHub Actions workflow (`verification.yml`) running on `main` branch pushes
 
