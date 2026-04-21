@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0]
+
+### Added
+
+- **API Consistency**: Added `is_all_known()` method
+  - Distinguishes between "exact match" (`is_all()`) and "all defined flags set" (`is_all_known()`)
+  - Ensures reliable flag checking even when raw bits contain unknown information
+- **Macro Hygiene**: Relocated internal flag registry into `Debug::fmt` implementation
+  - Uses a local `let` variable to completely eliminate name collisions with user-defined constants
+  - Solved `Self` reference issues in flag values within the registry
+- **Build Infrastructure**: Added `build.rs` to properly declare custom `kani` cfg
+  - Fixes `unexpected_cfgs` lint warnings/errors in newer Rust toolchains
+- **Formal Verification**: Added Kani proof harnesses for mathematical verification
+  - 19 proof harnesses covering all bitwise operations (`union`, `intersection`, `difference`, `complement`, `symmetric_difference`)
+  - Property verification: `from_bits` soundness, `contains` correctness, `is_all_known` correctness, roundtrip conversion
+  - Algebraic property proofs: commutativity, De Morgan's laws
+  - New GitHub Actions workflow (`verification.yml`) running on `main` branch pushes
+- **Tests**: Added comprehensive tests for `is_all_known` and macro hygiene
+
 ## [1.0.4]
 
 ### Changed

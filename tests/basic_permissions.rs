@@ -153,6 +153,21 @@ fn test_is_all() {
 }
 
 #[test]
+fn test_is_all_known() {
+    let all = Permissions::all();
+    assert!(all.is_all_known());
+
+    // Only defined bits set
+    let rw = Permissions::READ | Permissions::WRITE;
+    assert!(!rw.is_all_known());
+
+    // All defined bits set + unknown bits
+    let with_unknown = Permissions::from_bits_retain(0b1111); // READ(1)|WRITE(2)|EXEC(4)|UNKNOWN(8)
+    assert!(with_unknown.is_all_known());
+    assert!(!with_unknown.is_all());
+}
+
+#[test]
 fn test_equality() {
     let a = Permissions::READ | Permissions::WRITE;
     let b = Permissions::READ.union(Permissions::WRITE);
