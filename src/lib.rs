@@ -526,6 +526,7 @@ macro_rules! neobit {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 write!(f, "{}(", stringify!($name))?;
 
+                #[allow(non_snake_case)]
                 let __NEOBIT_INTERNAL_FLAGS_REGISTRY: &[(&str, $int_ty)] = &[
                     $((stringify!($flag_name), $flag_value),)*
                 ];
