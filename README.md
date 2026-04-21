@@ -111,7 +111,8 @@ Flags::from_bits_retain(bits)      // Keep all bits (same as From)
 flags.contains(other)       // All bits in other are in flags
 flags.intersects(other)     // Any bits in other are in flags
 flags.is_empty()            // No bits set
-flags.is_all()              // All defined flags set
+flags.is_all()              // All bits exactly match all defined flags
+flags.is_all_known()        // All defined flags are set (ignores unknown bits)
 flags.bits()                // Raw bit value
 ```
 
@@ -180,6 +181,32 @@ let comp = !flags;     // 0b11111110
 ```
 
 neobit preserves all bit information, which is essential for hardware registers and protocol handling.
+
+## Handling Unknown Bits
+
+neobit is designed to work in both "Clean" (validated) and "Raw" (hardware/FFI) environments. The API provides different ways to check flag states depending on whether unknown bits are present.
+
+```rust
+neobit! {
+    pub struct Flags: u8 {
+        const A = 0b0001;
+        const B = 0b0010;
+    }
+}
+
+// A value from the "Raw" world (e.g., hardware register)
+// Definition A and B are set, but there are also unknown bits (0b1111_0000)
+let flags = Flags::from_bits_retain(0b1111_0011);
+
+// is_all() requires an exact match with all defined bits
+assert!(!flags.is_all()); 
+
+// is_all_known() only checks if defined flags are set, ignoring others
+assert!(flags.is_all_known()); 
+
+// .contains() also works regardless of unknown bits
+assert!(flags.contains(Flags::A | Flags::B));
+```
 
 ## Signed Types
 
