@@ -1,6 +1,6 @@
 [package]
 name = "neobit"
-version = "1.0.4"
+version = "1.1.0"
 edition = "2021"
 rust-version = "1.56"
 license = "MIT OR Apache-2.0"
@@ -13,6 +13,3 @@ readme = "README.md"
 
 [features]
 default = []
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

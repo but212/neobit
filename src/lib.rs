@@ -526,17 +526,14 @@ macro_rules! neobit {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 write!(f, "{}(", stringify!($name))?;
 
-                #[allow(non_snake_case)]
-                let __registry: &[(&str, $int_ty)] = &[
+                let __NEOBIT_INTERNAL_FLAGS_REGISTRY: &[(&str, $int_ty)] = &[
                     $((stringify!($flag_name), $flag_value),)*
                 ];
 
                 let mut bits = self.bits;
                 let mut first = true;
 
-                // Output single-bit flags by name
-                for &(name, value) in __registry {
-                    // Check if single bit (power of 2)
+                for &(name, value) in __NEOBIT_INTERNAL_FLAGS_REGISTRY {
                     let is_single_bit: bool = value != 0 && (value & (value.wrapping_sub(1))) == 0;
                     if is_single_bit && (bits & value) == value {
                         if !first {
