@@ -66,25 +66,29 @@ fn main() {
 
 ## Limitations
 
-### Composite Constants in Macro
+### Flag Value Expressions in Macro
 
-Composite constants can be defined in the macro, but require using `.union().bits()` syntax:
+Flag value expressions in `neobit!` must evaluate to the raw integer type of the struct.
+
+- Expressions returning a `Self` type (such as `Self::A.union(Self::B)`) must call `.bits()` to convert back to an integer:
 
 ```rust
 neobit! {
     pub struct Flags: u8 {
-        const A = 0b001;     // ✅ Single bit
-        const B = 0b010;     // ✅ Single bit
-        const AB = Self::A.union(Self::B).bits();  // ✅ Composite constant - requires .bits()
+        const A = 0b001;     // Single bit
+        const B = 0b010;     // Single bit
+        const AB = Self::A.union(Self::B).bits();  // Composite constant - requires .bits()
     }
 }
 ```
 
-Alternatively, define composite constants outside the macro for cleaner syntax:
+- Multi-bit field values and bitwise expressions (e.g. `const BR_16 = 0b011 << 3;`) are fully allowed as long as they evaluate to integer values. Note that `Debug` decomposes values into single-bit flag names, so multi-bit constants are represented as combinations of overlapping single-bit flags.
+
+- Alternatively, composite constants can be defined in an `impl` block for cleaner syntax:
 
 ```rust
 impl Flags {
-    pub const AB: Self = Self::A.union(Self::B);  // ✅ Cleaner approach
+    pub const AB: Self = Self::A.union(Self::B);  // Cleaner approach
 }
 ```
 
@@ -261,7 +265,7 @@ fn set_ready_flag() {
 
 ## Debug Output
 
-Single-bit flags are shown by name. Composite constants are expanded:
+Single-bit flags are shown by name. Debug decomposes values using single-bit flag names, so multi-bit constants are displayed as combinations of overlapping single-bit flag names (e.g., `SpiControl(BR_4 | BR_8)`):
 
 ```rust
 println!("{:?}", Flags::READ);                    // Flags(READ)

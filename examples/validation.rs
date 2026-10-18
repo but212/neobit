@@ -42,23 +42,23 @@ fn handle_api_response(status_bits: u16) {
     // Validate the response
     match StatusFlags::from_bits(status_bits) {
         Some(status) => {
-            println!("✓ Valid status: {:?}", status);
+            println!("[OK] Valid status: {:?}", status);
 
             if status.contains(StatusFlags::ERROR) {
-                println!("  ⚠ Response contains ERROR flag");
+                println!("  [WARN] Response contains ERROR flag");
             }
             if status.contains(StatusFlags::WARNING) {
-                println!("  ⚠ Response contains WARNING flag");
+                println!("  [WARN] Response contains WARNING flag");
             }
             if status.contains(StatusFlags::SUCCESS) {
-                println!("  ✓ Operation successful");
+                println!("  [OK] Operation successful");
             }
             if status.contains(StatusFlags::CACHED) {
-                println!("  ℹ Response from cache");
+                println!("  [INFO] Response from cache");
             }
         }
         None => {
-            println!("✗ Invalid status - contains unknown flags");
+            println!("[ERR] Invalid status - contains unknown flags");
 
             // Still process it by retaining unknown bits
             let status = StatusFlags::from_bits_retain(status_bits);
@@ -79,15 +79,15 @@ fn main() {
     // Valid permissions
     let valid_bits = 0b0011; // READ | WRITE
     match parse_access_strict(valid_bits) {
-        Ok(perms) => println!("✓ Parsed {:#04x} as {:?}", valid_bits, perms),
-        Err(e) => println!("✗ {}", e),
+        Ok(perms) => println!("[OK] Parsed {:#04x} as {:?}", valid_bits, perms),
+        Err(e) => println!("[ERR] {}", e),
     }
 
     // Invalid permissions (unknown bit set)
     let invalid_bits = 0b10011; // READ | WRITE | unknown bit
     match parse_access_strict(invalid_bits) {
-        Ok(perms) => println!("✓ Parsed {:#04x} as {:?}", invalid_bits, perms),
-        Err(e) => println!("✗ {}", e),
+        Ok(perms) => println!("[OK] Parsed {:#04x} as {:?}", invalid_bits, perms),
+        Err(e) => println!("[ERR] {}", e),
     }
 
     println!("\n=== Lenient Parsing (from_bits_retain) ===\n");
@@ -134,17 +134,17 @@ fn main() {
     println!("\n=== Use Case Comparison ===\n");
 
     println!("Use from_bits() when:");
-    println!("  • Validating user input");
-    println!("  • Ensuring only known flags are set");
-    println!("  • Building type-safe APIs");
-    println!("  • Application-level flags\n");
+    println!("  - Validating user input");
+    println!("  - Ensuring only known flags are set");
+    println!("  - Building type-safe APIs");
+    println!("  - Application-level flags\n");
 
     println!("Use from_bits_retain() when:");
-    println!("  • Parsing C FFI data");
-    println!("  • Hardware register access");
-    println!("  • Protocol parsing with reserved bits");
-    println!("  • Forward compatibility with future flags");
-    println!("  • Need to preserve all bits exactly\n");
+    println!("  - Parsing C FFI data");
+    println!("  - Hardware register access");
+    println!("  - Protocol parsing with reserved bits");
+    println!("  - Forward compatibility with future flags");
+    println!("  - Need to preserve all bits exactly\n");
 
     println!("=== Converting Between Types ===\n");
 

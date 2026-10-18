@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Documentation
+
+- **Documentation Corrections**:
+  - Fixed Limitations section in `README.md` and `examples/limitations.rs` to clarify that macro flag value expressions must evaluate to integer types (with `Self` expressions requiring `.bits()`), and multi-bit constants are allowed.
+  - Clarified `is_all()` documentation in `src/lib.rs` to note that it returns `true` only if all defined flags match exactly without unknown bits (referencing `is_all_known()` for ignoring unknown bits).
+  - Clarified `Debug` formatting behavior in `README.md` regarding how multi-bit constants are decomposed into single-bit flag names.
+
 ### Refactored
 
 - **Macro Simplification & Invariant Consolidation**:

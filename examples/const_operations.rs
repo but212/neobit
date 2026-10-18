@@ -125,17 +125,17 @@ fn main() {
 
     // Demonstrate const operations
     const INTERSECTION: Features = DEBUG_MODE.intersection(DEVELOPMENT_MODE);
-    println!("Debug ∩ Development: {:?}", INTERSECTION);
+    println!("Debug AND Development: {:?}", INTERSECTION);
 
     const DIFFERENCE: Features = DEVELOPMENT_MODE.difference(DEBUG_MODE);
     println!("Development - Debug: {:?}", DIFFERENCE);
 
     const SYMMETRIC_DIFF: Features = DEBUG_MODE.symmetric_difference(PRODUCTION_MODE);
-    println!("Debug △ Production: {:?}", SYMMETRIC_DIFF);
+    println!("Debug XOR Production: {:?}", SYMMETRIC_DIFF);
 
     // Bitwise complement (all bits flipped)
     const COMPLEMENT: Features = DEBUG_MODE.complement();
-    println!("¬Debug (bitwise): {:?}", COMPLEMENT);
+    println!("NOT Debug (bitwise): {:?}", COMPLEMENT);
 
     println!("\n=== Runtime Assertions ===");
 
@@ -144,5 +144,5 @@ fn main() {
     assert!(PRODUCTION_MODE.has_observability());
     assert!(!NO_FEATURES.has_observability());
 
-    println!("All assertions passed! ✓");
+    println!("All assertions passed!");
 }
