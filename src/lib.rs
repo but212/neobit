@@ -312,7 +312,9 @@ macro_rules! neobit {
                 self.bits == 0
             }
 
-            /// Returns `true` if all defined flags are set.
+            /// Returns `true` if all defined flags are set and there are no unknown bits.
+            ///
+            /// To ignore unknown bits, use [`is_all_known`](Self::is_all_known).
             ///
             /// # Example
             ///

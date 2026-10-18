@@ -4,23 +4,28 @@
 
 use neobit::neobit;
 
-// ✅ GOOD: Single-bit constants only
+// ✅ Allowed forms inside the macro
 neobit! {
     pub struct Flags: u8 {
         const A = 0b001;     // Single bit - OK
         const B = 0b010;     // Single bit - OK
         const C = 0b100;     // Single bit - OK
+
+        // Composite constant using union() requires .bits() because macro constants expect raw integers
+        const AB = Self::A.union(Self::B).bits();
+
+        // Multi-bit field values / bitwise expressions are allowed as long as they evaluate to integer type
+        const BR_16 = 0b011 << 3;
     }
 }
 
 impl Flags {
-    // ✅ GOOD: Composite constants using union()
-    pub const AB: Self = Self::A.union(Self::B);
+    // ✅ Composite constants in impl block returning Self type (cleaner syntax)
     pub const AC: Self = Self::A.union(Self::C);
     pub const BC: Self = Self::B.union(Self::C);
     pub const ABC: Self = Self::AB.union(Self::C);
 
-    // ✅ GOOD: Complex expressions in impl block
+    // Complex expressions in impl block
     pub const ALL_EXCEPT_A: Self = Self::all().difference(Self::A);
     pub const MIDDLE_BITS: Self = Self::all().intersection(Self::BC);
 
@@ -34,14 +39,13 @@ impl Flags {
     pub const ALL: Self = Self::READ_WRITE.union(Self::EXECUTE);
 }
 
-// ❌ BAD: This would fail to compile!
+// ❌ Invalid form inside macro (fails to compile because expression returns Flags, not raw u8 integer type)
 /*
 neobit! {
     pub struct BadFlags: u8 {
-        const A = 0b001;     // ✅ OK
-        const B = 0b010;     // ✅ OK
-        const AB = 0b011;    // ❌ Multi-bit constant NOT allowed!
-        const COMPLEX = 1 << 2 | 1 << 3;  // ❌ Complex expressions NOT allowed!
+        const A = 0b001;
+        const B = 0b010;
+        const AB = Self::A.union(Self::B); // ❌ Fails: expects integer type (needs .bits())
     }
 }
 */
@@ -64,11 +68,11 @@ fn main() {
     println!("ALL_EXCEPT_A: {:?}", Flags::ALL_EXCEPT_A);
     println!("MIDDLE_BITS: {:?}", Flags::MIDDLE_BITS);
 
-    println!("\n=== Why this limitation exists ===");
-    println!("1. Keeps the macro simple and fast to compile");
-    println!("2. Avoids bit validation complexity");
-    println!("3. Makes it clear which are 'primitive' flags");
-    println!("4. Composite constants can still be defined in impl blocks");
+    println!("\n=== Macro constant requirements and Debug behavior ===");
+    println!("1. Macro flag constants must evaluate to the raw integer type of the struct.");
+    println!("2. Expressions producing Self (like Self::A.union(Self::B)) require .bits().");
+    println!("3. Multi-bit constants (e.g. 0b011 << 3) compile and work correctly.");
+    println!("4. Debug decomposes values into single-bit flag names, so multi-bit constants are shown as combinations of overlapping single-bit flag names.");
 
     println!("\n=== Workarounds for complex patterns ===");
 
