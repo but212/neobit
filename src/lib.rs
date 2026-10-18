@@ -118,7 +118,7 @@ macro_rules! neobit {
             /// ```
             #[inline(always)]
             pub const fn empty() -> Self {
-                Self { bits: 0 }
+                Self::from_bits_retain(0)
             }
 
             /// Creates a flags value from raw bits if all bits are valid.
@@ -135,10 +135,8 @@ macro_rules! neobit {
             /// ```
             #[inline(always)]
             pub const fn from_bits(bits: $int_ty) -> ::core::option::Option<Self> {
-                let all = Self::all().bits;
-
-                if (bits & !all) == 0 {
-                    ::core::option::Option::Some(Self { bits })
+                if (bits & !Self::all().bits) == 0 {
+                    ::core::option::Option::Some(Self::from_bits_retain(bits))
                 } else {
                     ::core::option::Option::None
                 }
@@ -210,6 +208,7 @@ macro_rules! neobit {
             /// flags.set(Flags::A, false);
             /// assert_eq!(flags, Flags::B);
             /// ```
+            #[inline(always)]
             pub fn set(&mut self, other: Self, condition: bool) {
                 let m = (condition as $int_ty).wrapping_neg();
                 self.bits = (self.bits & !other.bits) | (other.bits & m);
@@ -229,7 +228,7 @@ macro_rules! neobit {
             /// ```
             #[inline(always)]
             pub const fn union(self, other: Self) -> Self {
-                Self { bits: self.bits | other.bits }
+                Self::from_bits_retain(self.bits | other.bits)
             }
 
             /// Returns the intersection of two flags (AND).
@@ -237,7 +236,7 @@ macro_rules! neobit {
             /// This is the `const fn` equivalent of the `&` operator.
             #[inline(always)]
             pub const fn intersection(self, other: Self) -> Self {
-                Self { bits: self.bits & other.bits }
+                Self::from_bits_retain(self.bits & other.bits)
             }
 
             /// Returns the difference of two flags (self AND NOT other).
@@ -245,7 +244,7 @@ macro_rules! neobit {
             /// This is the `const fn` equivalent of the `-` operator.
             #[inline(always)]
             pub const fn difference(self, other: Self) -> Self {
-                Self { bits: self.bits & !other.bits }
+                Self::from_bits_retain(self.bits & !other.bits)
             }
 
             /// Returns the symmetric difference of two flags (XOR).
@@ -253,7 +252,7 @@ macro_rules! neobit {
             /// This is the `const fn` equivalent of the `^` operator.
             #[inline(always)]
             pub const fn symmetric_difference(self, other: Self) -> Self {
-                Self { bits: self.bits ^ other.bits }
+                Self::from_bits_retain(self.bits ^ other.bits)
             }
 
             /// Returns the bitwise complement (NOT).
@@ -279,7 +278,7 @@ macro_rules! neobit {
             /// semantics which may produce unexpected results.
             #[inline(always)]
             pub const fn complement(self) -> Self {
-                Self { bits: !self.bits }
+                Self::from_bits_retain(!self.bits)
             }
 
             /// Returns the union of all defined flags.
@@ -295,9 +294,7 @@ macro_rules! neobit {
             /// ```
             #[inline(always)]
             pub const fn all() -> Self {
-                let mut result = Self { bits: 0 };
-                $(result.bits |= $flag_value;)*
-                result
+                Self::from_bits_retain(0 $(| ($flag_value))*)
             }
 
             /// Returns `true` if no flags are set.
@@ -433,28 +430,28 @@ macro_rules! neobit {
             }
         }
 
-        impl Default for $name {
+        impl ::core::default::Default for $name {
             #[inline(always)]
             fn default() -> Self {
                 Self::empty()
             }
         }
 
-        impl From<$int_ty> for $name {
+        impl ::core::convert::From<$int_ty> for $name {
             #[inline(always)]
             fn from(bits: $int_ty) -> Self {
                 Self::from_bits_retain(bits)
             }
         }
 
-        impl From<$name> for $int_ty {
+        impl ::core::convert::From<$name> for $int_ty {
             #[inline(always)]
             fn from(flags: $name) -> $int_ty {
                 flags.bits()
             }
         }
 
-        impl core::ops::BitOr for $name {
+        impl ::core::ops::BitOr for $name {
             type Output = Self;
             #[inline(always)]
             fn bitor(self, rhs: Self) -> Self {
@@ -462,14 +459,14 @@ macro_rules! neobit {
             }
         }
 
-        impl core::ops::BitOrAssign for $name {
+        impl ::core::ops::BitOrAssign for $name {
             #[inline(always)]
             fn bitor_assign(&mut self, rhs: Self) {
-                *self = self.union(rhs);
+                self.insert(rhs);
             }
         }
 
-        impl core::ops::BitAnd for $name {
+        impl ::core::ops::BitAnd for $name {
             type Output = Self;
             #[inline(always)]
             fn bitand(self, rhs: Self) -> Self {
@@ -477,14 +474,14 @@ macro_rules! neobit {
             }
         }
 
-        impl core::ops::BitAndAssign for $name {
+        impl ::core::ops::BitAndAssign for $name {
             #[inline(always)]
             fn bitand_assign(&mut self, rhs: Self) {
                 *self = self.intersection(rhs);
             }
         }
 
-        impl core::ops::BitXor for $name {
+        impl ::core::ops::BitXor for $name {
             type Output = Self;
             #[inline(always)]
             fn bitxor(self, rhs: Self) -> Self {
@@ -492,14 +489,14 @@ macro_rules! neobit {
             }
         }
 
-        impl core::ops::BitXorAssign for $name {
+        impl ::core::ops::BitXorAssign for $name {
             #[inline(always)]
             fn bitxor_assign(&mut self, rhs: Self) {
-                *self = self.symmetric_difference(rhs);
+                self.toggle(rhs);
             }
         }
 
-        impl core::ops::Not for $name {
+        impl ::core::ops::Not for $name {
             type Output = Self;
             #[inline(always)]
             fn not(self) -> Self {
@@ -507,7 +504,7 @@ macro_rules! neobit {
             }
         }
 
-        impl core::ops::Sub for $name {
+        impl ::core::ops::Sub for $name {
             type Output = Self;
             #[inline(always)]
             fn sub(self, rhs: Self) -> Self {
@@ -515,16 +512,16 @@ macro_rules! neobit {
             }
         }
 
-        impl core::ops::SubAssign for $name {
+        impl ::core::ops::SubAssign for $name {
             #[inline(always)]
             fn sub_assign(&mut self, rhs: Self) {
-                *self = self.difference(rhs);
+                self.remove(rhs);
             }
         }
 
-        impl core::fmt::Debug for $name {
-            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                write!(f, "{}(", stringify!($name))?;
+        impl ::core::fmt::Debug for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::write!(f, "{}(", stringify!($name))?;
 
                 #[allow(non_snake_case)]
                 let __NEOBIT_INTERNAL_FLAGS_REGISTRY: &[(&str, $int_ty)] = &[
@@ -538,9 +535,9 @@ macro_rules! neobit {
                     let is_single_bit: bool = value != 0 && (value & (value.wrapping_sub(1))) == 0;
                     if is_single_bit && (bits & value) == value {
                         if !first {
-                            write!(f, " | ")?;
+                            ::core::write!(f, " | ")?;
                         }
-                        write!(f, "{}", name)?;
+                        ::core::write!(f, "{}", name)?;
                         bits &= !value;
                         first = false;
                     }
@@ -549,42 +546,42 @@ macro_rules! neobit {
                 // Output remaining unknown bits as hex
                 if bits != 0 {
                     if !first {
-                        write!(f, " | ")?;
+                        ::core::write!(f, " | ")?;
                     }
-                    write!(f, "{:#x}", bits)?;
+                    ::core::write!(f, "{:#x}", bits)?;
                     first = false;
                 }
 
                 // Empty case
                 if first {
-                    write!(f, "empty")?;
+                    ::core::write!(f, "empty")?;
                 }
 
-                write!(f, ")")
+                ::core::write!(f, ")")
             }
         }
 
-        impl core::fmt::Binary for $name {
-            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                core::fmt::Binary::fmt(&self.bits, f)
+        impl ::core::fmt::Binary for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::Binary::fmt(&self.bits, f)
             }
         }
 
-        impl core::fmt::LowerHex for $name {
-            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                core::fmt::LowerHex::fmt(&self.bits, f)
+        impl ::core::fmt::LowerHex for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::LowerHex::fmt(&self.bits, f)
             }
         }
 
-        impl core::fmt::UpperHex for $name {
-            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                core::fmt::UpperHex::fmt(&self.bits, f)
+        impl ::core::fmt::UpperHex for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::UpperHex::fmt(&self.bits, f)
             }
         }
 
-        impl core::fmt::Octal for $name {
-            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                core::fmt::Octal::fmt(&self.bits, f)
+        impl ::core::fmt::Octal for $name {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                ::core::fmt::Octal::fmt(&self.bits, f)
             }
         }
     };
