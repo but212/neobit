@@ -4,7 +4,7 @@
 
 use neobit::neobit;
 
-// ✅ Allowed forms inside the macro
+// Allowed forms inside the macro
 neobit! {
     pub struct Flags: u8 {
         const A = 0b001;     // Single bit - OK
@@ -20,7 +20,7 @@ neobit! {
 }
 
 impl Flags {
-    // ✅ Composite constants in impl block returning Self type (cleaner syntax)
+    // Composite constants in impl block returning Self type (cleaner syntax)
     pub const AC: Self = Self::A.union(Self::C);
     pub const BC: Self = Self::B.union(Self::C);
     pub const ABC: Self = Self::AB.union(Self::C);
@@ -39,13 +39,13 @@ impl Flags {
     pub const ALL: Self = Self::READ_WRITE.union(Self::EXECUTE);
 }
 
-// ❌ Invalid form inside macro (fails to compile because expression returns Flags, not raw u8 integer type)
+// Invalid form inside macro (fails to compile because expression returns Flags, not raw u8 integer type)
 /*
 neobit! {
     pub struct BadFlags: u8 {
         const A = 0b001;
         const B = 0b010;
-        const AB = Self::A.union(Self::B); // ❌ Fails: expects integer type (needs .bits())
+        const AB = Self::A.union(Self::B); // Fails: expects integer type (needs .bits())
     }
 }
 */

@@ -75,9 +75,9 @@ Flag value expressions in `neobit!` must evaluate to the raw integer type of the
 ```rust
 neobit! {
     pub struct Flags: u8 {
-        const A = 0b001;     // ✅ Single bit
-        const B = 0b010;     // ✅ Single bit
-        const AB = Self::A.union(Self::B).bits();  // ✅ Composite constant - requires .bits()
+        const A = 0b001;     // Single bit
+        const B = 0b010;     // Single bit
+        const AB = Self::A.union(Self::B).bits();  // Composite constant - requires .bits()
     }
 }
 ```
@@ -88,7 +88,7 @@ neobit! {
 
 ```rust
 impl Flags {
-    pub const AB: Self = Self::A.union(Self::B);  // ✅ Cleaner approach
+    pub const AB: Self = Self::A.union(Self::B);  // Cleaner approach
 }
 ```
 

@@ -323,5 +323,5 @@ fn main() {
     const _CHECK1: Mode = Mode::MODE_0755;
     const _CHECK2: RequestOptions = RequestOptions::SECURE_API;
 
-    println!("All composite constants evaluated at compile time! ✓");
+    println!("All composite constants evaluated at compile time!");
 }

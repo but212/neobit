@@ -147,23 +147,23 @@ fn main() {
 
     // Use the smallest type that fits your needs
     println!(
-        "For ≤8 flags:   use u8  ({} bytes)",
+        "For <=8 flags:   use u8  ({} bytes)",
         std::mem::size_of::<u8>()
     );
     println!(
-        "For ≤16 flags:  use u16 ({} bytes)",
+        "For <=16 flags:  use u16 ({} bytes)",
         std::mem::size_of::<u16>()
     );
     println!(
-        "For ≤32 flags:  use u32 ({} bytes)",
+        "For <=32 flags:  use u32 ({} bytes)",
         std::mem::size_of::<u32>()
     );
     println!(
-        "For ≤64 flags:  use u64 ({} bytes)",
+        "For <=64 flags:  use u64 ({} bytes)",
         std::mem::size_of::<u64>()
     );
     println!(
-        "For ≤128 flags: use u128 ({} bytes)",
+        "For <=128 flags: use u128 ({} bytes)",
         std::mem::size_of::<u128>()
     );
 
@@ -188,5 +188,5 @@ fn main() {
     println!("Medium combo (const): {:?}", MEDIUM_COMBO);
     println!("Large combo (const): {:?}", LARGE_COMBO);
 
-    println!("\nAll const operations work with any integer type! ✓");
+    println!("\nAll const operations work with any integer type!");
 }

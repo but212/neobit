@@ -125,7 +125,7 @@ fn main() {
 
     // Demonstrate const operations
     const INTERSECTION: Features = DEBUG_MODE.intersection(DEVELOPMENT_MODE);
-    println!("Debug ∩ Development: {:?}", INTERSECTION);
+    println!("Debug AND Development: {:?}", INTERSECTION);
 
     const DIFFERENCE: Features = DEVELOPMENT_MODE.difference(DEBUG_MODE);
     println!("Development - Debug: {:?}", DIFFERENCE);
