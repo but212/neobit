@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Refactored
+
+- **Macro Simplification & Invariant Consolidation**:
+  - Simplified `all()` method to compile-time fold expression `0 $(| ($flag_value))*`.
+  - Standardized constructor methods (`empty()`, `union()`, `intersection()`, `difference()`, `symmetric_difference()`, `complement()`, `from_bits()`) to instantiate using `from_bits_retain()`.
+  - Direct delegation of `BitOrAssign`, `BitXorAssign`, `SubAssign` operator traits to `insert`, `toggle`, and `remove` methods.
+  - Added `#[inline(always)]` to `set()` method for consistent inlining behavior.
+  - Qualified all core trait implementations in macro with `::core::` paths for hygiene.
+
 ## [1.1.0]
 
 ### Added
